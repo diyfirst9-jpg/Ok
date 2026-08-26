@@ -220,6 +220,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import File
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -239,7 +240,7 @@ private fun UnifiedActivity.LibraryArtwork(
     modifier: Modifier,
 ) {
     val context = LocalContext.current
-    val customFile = artworkPath?.let(::java.io.File)?.takeIf { it.isFile }
+    val customFile = artworkPath?.let { File(it) }?.takeIf { it.isFile }
     when {
         customFile != null -> {
             val key = "orientation_art:${customFile.absolutePath}:${customFile.lastModified()}:$iconRefreshKey"
@@ -252,7 +253,7 @@ private fun UnifiedActivity.LibraryArtwork(
         }
         app.id < 0 && iconPath != null -> {
             AsyncImage(
-                model = ImageRequest.Builder(context).data(java.io.File(iconPath)).crossfade(false).build(),
+                model = ImageRequest.Builder(context).data(File(iconPath)).crossfade(false).build(),
                 contentDescription = app.name,
                 modifier = modifier,
                 contentScale = ContentScale.Crop,
@@ -922,13 +923,8 @@ internal fun UnifiedActivity.UnifiedHub() {
                 scope = scope,
                 storeVisible = storeVisible,
                 contentFilters = contentFilters,
-                libraryLayoutMode = libraryLayoutMode,
                 immersiveMode = immersiveMode,
                 immersiveBlur = immersiveBlur,
-                onLibraryLayoutSelected = {
-                    libraryLayoutMode = it
-                    PrefManager.libraryLayoutMode = it.name
-                },
                 onStoreVisibleChanged = { key, value ->
                     storeVisible[key] = value
                     PrefManager.libraryStoreVisible = storeVisible.entries.filter { it.value }.joinToString(",") { it.key }
@@ -987,7 +983,7 @@ internal fun UnifiedActivity.UnifiedHub() {
                 val immersiveRequest =
                     remember(immersiveModel, immersiveBlur, context) {
                         val builder = ImageRequest.Builder(context).data(immersiveModel)
-                        (immersiveModel as? java.io.File)?.takeIf { it.isFile }?.let { file ->
+                        (immersiveModel as? File)?.takeIf { it.isFile }?.let { file ->
                             // Custom uploads can be overwritten in place.
                             val key = "library_immersive_bg:${file.absolutePath}:${file.lastModified()}"
                             builder.memoryCacheKey(if (immersiveBlur) "$key:blur" else key).diskCacheKey(key)
@@ -1051,7 +1047,7 @@ internal fun UnifiedActivity.UnifiedHub() {
                         }
                     },
                     onCreateShortcut = { exePath ->
-                        val exeFile = java.io.File(exePath)
+                        val exeFile = File(exePath)
                         addCustomGame(
                             context,
                             exeFile.nameWithoutExtension,
@@ -2207,7 +2203,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                             shortcut
                                 ?.getExtra("customLibraryIconPath")
                                 ?.ifBlank { shortcut.getExtra("customCoverArtPath") }
-                        if (!customPath.isNullOrBlank() && java.io.File(customPath).exists()) {
+                        if (!customPath.isNullOrBlank() && File(customPath).exists()) {
                             put(app.id, customPath)
                         }
                     }
@@ -2245,7 +2241,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                         if (app.id >= 0) return@forEach
                         val shortcut = findShortcutForGame(shortcutsSnapshot, app, true, false, 0) ?: return@forEach
                         val heroPath = shortcut.getExtra("customLibraryHeroArtPath")
-                        if (heroPath.isNullOrBlank() || !java.io.File(heroPath).isFile)
+                        if (heroPath.isNullOrBlank() || !File(heroPath).isFile)
                             return@forEach
                         put(app.id, heroPath)
                     }
@@ -2259,7 +2255,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                         if (app.id >= 0) return@forEach
                         val shortcut = findShortcutForGame(shortcutsSnapshot, app, true, false, 0) ?: return@forEach
                         val carouselPath = shortcut.getExtra("customLibraryCarouselArtPath")
-                        if (carouselPath.isNullOrBlank() || !java.io.File(carouselPath).isFile)
+                        if (carouselPath.isNullOrBlank() || !File(carouselPath).isFile)
                             return@forEach
                         put(app.id, carouselPath)
                     }
@@ -2273,7 +2269,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                         if (app.id >= 0) return@forEach
                         val shortcut = findShortcutForGame(shortcutsSnapshot, app, true, false, 0) ?: return@forEach
                         val listPath = shortcut.getExtra("customLibraryListArtPath")
-                        if (listPath.isNullOrBlank() || !java.io.File(listPath).isFile)
+                        if (listPath.isNullOrBlank() || !File(listPath).isFile)
                             return@forEach
                         put(app.id, listPath)
                     }
@@ -2286,7 +2282,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                     appsSnapshot.forEach { app ->
                         if (app.id >= 0) return@forEach
                         val safeName = app.name.replace("/", "_").replace("\\", "_")
-                        val iconFile = java.io.File(context.filesDir, "custom_icons/$safeName.png")
+                        val iconFile = File(context.filesDir, "custom_icons/$safeName.png")
                         if (iconFile.exists()) {
                             put(app.id, iconFile.absolutePath)
                         }
@@ -2497,8 +2493,15 @@ internal fun UnifiedActivity.LibraryCarousel(
         onDispose { chasingBordersPaused.value = false }
     }
 
-    LaunchedEffect(layoutMode) {
-        currentLibraryLayoutMode = layoutMode
+    val orientation = LocalConfiguration.current.orientation
+
+    LaunchedEffect(layoutMode, orientation) {
+        currentLibraryLayoutMode =
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                LibraryLayoutMode.GRID_4
+            } else {
+                LibraryLayoutMode.CAROUSEL
+            }
     }
 
     // Keep activity's item count in sync
@@ -2516,7 +2519,6 @@ internal fun UnifiedActivity.LibraryCarousel(
             List(displayedApps.size) { FocusRequester() }
         }
 
-    val orientation = LocalConfiguration.current.orientation
     val useNintendoLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
     val useWindowsPhonePortrait = orientation == Configuration.ORIENTATION_PORTRAIT
 
@@ -2603,7 +2605,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                 shortcut
                     ?.getExtra(LibraryShortcutArtwork.LibraryArtworkSlot.GAME_CARD.extraKey)
                     ?.takeIf { it.isNotBlank() }
-                    ?.let { java.io.File(it) }
+                    ?.let { File(it) }
                     ?.takeIf { it.isFile }
             }
 
@@ -2696,7 +2698,6 @@ internal fun UnifiedActivity.LibraryCarousel(
                     artworkCacheRefreshKey = artworkCacheRefreshKey,
                     visibleCustomIconArtworkPathByAppId = visibleCustomIconArtworkPathByAppId,
                     visibleCustomArtworkPathByAppId = visibleCustomArtworkPathByAppId,
-                    visibleCustomIconPathByAppId = visibleCustomIconPathByAppId,
                     visibleCustomListPathByAppId = visibleCustomListPathByAppId,
                     visibleCustomHeroPathByAppId = visibleCustomHeroPathByAppId,
                     isControllerConnected = isControllerConnected,

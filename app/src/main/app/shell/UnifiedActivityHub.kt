@@ -239,7 +239,7 @@ private fun UnifiedActivity.LibraryArtwork(
     modifier: Modifier,
 ) {
     val context = LocalContext.current
-    val customFile = artworkPath?.let { java.io.File(it) }?.takeIf { it.isFile }
+    val customFile = artworkPath?.let(::java.io.File)?.takeIf { it.isFile }
     when {
         customFile != null -> {
             val key = "orientation_art:${customFile.absolutePath}:${customFile.lastModified()}:$iconRefreshKey"
@@ -922,8 +922,13 @@ internal fun UnifiedActivity.UnifiedHub() {
                 scope = scope,
                 storeVisible = storeVisible,
                 contentFilters = contentFilters,
+                libraryLayoutMode = libraryLayoutMode,
                 immersiveMode = immersiveMode,
                 immersiveBlur = immersiveBlur,
+                onLibraryLayoutSelected = {
+                    libraryLayoutMode = it
+                    PrefManager.libraryLayoutMode = it.name
+                },
                 onStoreVisibleChanged = { key, value ->
                     storeVisible[key] = value
                     PrefManager.libraryStoreVisible = storeVisible.entries.filter { it.value }.joinToString(",") { it.key }
@@ -2492,15 +2497,8 @@ internal fun UnifiedActivity.LibraryCarousel(
         onDispose { chasingBordersPaused.value = false }
     }
 
-    val orientation = LocalConfiguration.current.orientation
-
-    LaunchedEffect(layoutMode, orientation) {
-        currentLibraryLayoutMode =
-            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                LibraryLayoutMode.GRID_4
-            } else {
-                LibraryLayoutMode.CAROUSEL
-            }
+    LaunchedEffect(layoutMode) {
+        currentLibraryLayoutMode = layoutMode
     }
 
     // Keep activity's item count in sync
@@ -2518,6 +2516,7 @@ internal fun UnifiedActivity.LibraryCarousel(
             List(displayedApps.size) { FocusRequester() }
         }
 
+    val orientation = LocalConfiguration.current.orientation
     val useNintendoLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE
     val useWindowsPhonePortrait = orientation == Configuration.ORIENTATION_PORTRAIT
 
@@ -2697,6 +2696,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                     artworkCacheRefreshKey = artworkCacheRefreshKey,
                     visibleCustomIconArtworkPathByAppId = visibleCustomIconArtworkPathByAppId,
                     visibleCustomArtworkPathByAppId = visibleCustomArtworkPathByAppId,
+                    visibleCustomIconPathByAppId = visibleCustomIconPathByAppId,
                     visibleCustomListPathByAppId = visibleCustomListPathByAppId,
                     visibleCustomHeroPathByAppId = visibleCustomHeroPathByAppId,
                     isControllerConnected = isControllerConnected,

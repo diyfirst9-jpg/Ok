@@ -1,141 +1,113 @@
-name: Tag APK Artifacts
+name: Build APK
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        flavor:
-          - name: Standard
-            variant: Standard
-            gradleTask: assembleStandardDebug
-            apkPath: app/build/outputs/apk/standard/debug/standard.apk
-          - name: Ludashi
-            variant: Ludashi
-            gradleTask: assembleLudashiDebug
-            apkPath: app/build/outputs/apk/ludashi/debug/ludashi.apk
-          - name: Pubg
-            variant: Pubg
-            gradleTask: assemblePubgDebug
-            apkPath: app/build/outputs/apk/pubg/debug/pubg.apk
-          - name: Antutu
-            variant: Antutu
-            gradleTask: assembleAntutuDebug
-            apkPath: app/build/outputs/apk/antutu/debug/antutu.apk
+    timeout-minutes: 45
 
     steps:
-      - name: Clone repository
+      - name: Checkout repository
         uses: actions/checkout@v6
         with:
           submodules: recursive
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Cache LFS
-        uses: actions/cache@v5
-        with:
-          path: .git/lfs
-          key: lfs-${{ hashFiles('**/*.txz', '**/*.tzst') }}
-          restore-keys: lfs-
-
-      - name: Pull LFS files
-        run: git lfs pull
-
-      - name: Cache NDK build outputs
-        uses: actions/cache@v5
-        with:
-          path: |
-            app/.cxx
-            app/build/intermediates/cxx
-          key: tag-ndk-${{ hashFiles('app/src/main/cpp/**', 'app/build.gradle', 'app/src/main/cpp/CMakeLists.txt') }}
-          restore-keys: |
-            tag-ndk-
-            ndk-
-
-      - name: Cache Rust Steam client
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            app/src/main/cpp/wn-steam-client/rust/target
-          key: cargo-${{ hashFiles('app/src/main/cpp/wn-steam-client/rust/Cargo.lock') }}
-          restore-keys: cargo-
+      - name: Install Git LFS
+        run: |
+          git lfs install --local
+          git lfs pull
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'temurin'
+          cache: gradle
 
-      - name: Install Rust Android target
-        run: rustup target add aarch64-linux-android
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;27.3.13750724" \
+            "cmake;3.22.1"
+          yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          validate-wrappers: true
-          cache-cleanup: 'on-success'
+          toolchain: stable
+          target: aarch64-linux-android
+          cache: true
+          cache-workspaces: app/src/main/cpp/wn-steam-client/rust
 
-      - name: Decode keystore and build debug APK
-        timeout-minutes: 15
+      - name: Cache Gradle and native build outputs
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            app/.cxx
+            app/build/intermediates/cxx
+            app/src/main/cpp/wn-steam-client/rust/target
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-android-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties', 'app/src/main/cpp/**', 'app/src/main/rust/**') }}
+          restore-keys: |
+            ${{ runner.os }}-android-
+
+      - name: Verify required submodules
+        run: |
+          set -euo pipefail
+          test -d app/src/main/cpp/adrenotools
+          test -n "$(find app/src/main/cpp/adrenotools -mindepth 1 -maxdepth 1 -print -quit)"
+
+      - name: Build debug APK
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          VERSION_NAME: CI-${{ github.run_number }}
           GRADLE_OPTS: -Xmx4g -XX:+UseG1GC
-          VERSION_NAME: ${{ github.ref_name }}
         run: |
-          export KEYSTORE_FILE="${{ github.workspace }}/release.jks"
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_FILE"
-          else
-            export KEYSTORE_PASSWORD="dummypass"
-            export KEY_ALIAS="winnative"
-            export KEY_PASSWORD="dummypass"
-            keytool -genkey -v \
-              -keystore "$KEYSTORE_FILE" \
-              -alias winnative \
-              -keyalg RSA -keysize 2048 -validity 1 \
-              -storepass dummypass -keypass dummypass \
-              -dname "CN=CI, OU=CI, O=CI, L=CI, ST=CI, C=US"
-          fi
+          set -euo pipefail
           chmod +x ./gradlew
-          ./gradlew :app:${{ matrix.flavor.gradleTask }} --build-cache --parallel -x lint
+          ./gradlew :app:assembleDebug --build-cache --parallel --stacktrace -x lint
 
-      - name: Prepare APK for upload
-        id: package
-        env:
-          APK_PATH: ${{ matrix.flavor.apkPath }}
-          VARIANT_NAME: ${{ matrix.flavor.variant }}
-          REF_NAME: ${{ github.ref_name }}
+      - name: Verify APK
         run: |
-          upload_dir="artifacts/apk"
-          mkdir -p "$upload_dir"
-          safe_ref=$(printf '%s' "$REF_NAME" | tr '/[:space:]' '-' | tr -cd 'A-Za-z0-9._-')
-          apk_name="WinNative-${safe_ref}-${VARIANT_NAME}.apk"
-          cp "$APK_PATH" "$upload_dir/$apk_name"
-          echo "artifact_name=WinNative-${safe_ref}-${VARIANT_NAME}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          apk="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
 
-      - name: Upload APK
+          build_tools="$ANDROID_SDK_ROOT/build-tools/35.0.0"
+          "$build_tools/apksigner" verify "$apk"
+          "$build_tools/aapt2" dump badging "$apk" | head -1
+          ls -lh "$apk"
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.package.outputs.artifact_name }}
-          path: artifacts/apk/*.apk
-          retention-days: 30
+          name: WinNative-debug-${{ github.run_number }}-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 14
           compression-level: 0

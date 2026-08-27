@@ -39,7 +39,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.winlator.cmod.R
-import com.winlator.cmod.feature.sync.google.GoogleFragment
 import com.winlator.cmod.shared.ui.nav.PANE_DIR_ACTIVATE
 import com.winlator.cmod.shared.ui.nav.PANE_DIR_DOWN
 import com.winlator.cmod.shared.ui.nav.PANE_DIR_LEFT
@@ -335,9 +334,6 @@ private fun SettingsContentNavHost(
         }
         composable(SettingsRoutes.fromNavItem(SettingsNavItem.DEBUG)) {
             AndroidFragment<DebugFragment>()
-        }
-        composable(SettingsRoutes.fromNavItem(SettingsNavItem.GOOGLE)) {
-            AndroidFragment<GoogleFragment>()
         }
         composable(SettingsRoutes.fromNavItem(SettingsNavItem.PRESETS)) {
             AndroidFragment<PresetsFragment>()

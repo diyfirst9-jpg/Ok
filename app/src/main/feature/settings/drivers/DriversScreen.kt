@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -184,6 +185,8 @@ fun DriversScreen(
     onRestoreDefaultRepos: () -> Unit,
     bridge: SettingsNavBridge? = null,
 ) {
+    SmoothScreenTransition {
+
     var showAddRepoDialog by remember { mutableStateOf(false) }
     var editingRepo by remember { mutableStateOf<Pair<Int, DriverRepo>?>(null) }
     var driverPendingRemoval by remember { mutableStateOf<InstalledDriverItem?>(null) }
@@ -353,7 +356,8 @@ fun DriversScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
-}
+
+    }}
 
 // Hero header
 

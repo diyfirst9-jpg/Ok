@@ -309,6 +309,7 @@ internal fun UnifiedActivity.DownloadsTab(
     Column(
         Modifier
             .fillMaxSize()
+            .smoothScreenEnter()
             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
             .tabScreenPadding(top = DownloadsHeaderTopPadding)
             .pointerInput(Unit) {

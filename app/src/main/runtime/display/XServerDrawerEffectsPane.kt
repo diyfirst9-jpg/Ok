@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
@@ -191,6 +193,8 @@ internal fun ScreenEffectsPaneContent(
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
+    SmoothPanelEntry {
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val paneScale = computePaneScale(maxHeight)
         CompositionLocalProvider(LocalPaneScale provides paneScale) {
@@ -462,5 +466,7 @@ internal fun ScreenEffectsPaneContent(
                 }
             }
         }
+    }
+
     }
 }

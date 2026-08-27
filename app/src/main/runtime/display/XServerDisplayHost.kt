@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.widget.FrameLayout
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.LinearEasing

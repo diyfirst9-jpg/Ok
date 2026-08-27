@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.stores.steam.friends
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -110,6 +111,8 @@ fun SteamChatScreen(
     friend: SteamFriendEntry,
     onClose: () -> Unit,
 ) {
+    SmoothScreenTransition {
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val messages = remember { mutableStateListOf<SteamChatMessage>() }
@@ -366,7 +369,8 @@ fun SteamChatScreen(
             }
         }
     }
-}
+
+    }}
 
 @Composable
 private fun MessageBubble(msg: SteamChatMessage) {

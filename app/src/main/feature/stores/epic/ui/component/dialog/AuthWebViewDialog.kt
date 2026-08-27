@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.stores.epic.ui.component.dialog
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.ViewGroup
@@ -47,6 +48,8 @@ fun AuthWebViewDialog(
     onPageFinished: ((url: String, webView: WebView) -> Unit)? = null,
     customWebViewClient: WebViewClient? = null,
 ) {
+    SmoothScreenTransition {
+
     if (isVisible) {
         val defaultTitle = stringResource(R.string.steam_login_auth_webview_title)
         var topBarTitle by rememberSaveable { mutableStateOf(defaultTitle) }
@@ -204,7 +207,8 @@ fun AuthWebViewDialog(
             },
         )
     }
-}
+
+    }}
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL)
 @Preview

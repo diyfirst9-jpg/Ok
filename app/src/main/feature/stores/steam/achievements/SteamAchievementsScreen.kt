@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.stores.steam.achievements
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -94,6 +95,8 @@ fun SteamAchievementsScreen(
     appName: String,
     onClose: () -> Unit,
 ) {
+    SmoothScreenTransition {
+
     val context = LocalContext.current
     var loading by remember { mutableStateOf(true) }
     var achievements by remember { mutableStateOf<List<Achievement>>(emptyList()) }
@@ -176,7 +179,8 @@ fun SteamAchievementsScreen(
         }
     }
     }
-}
+
+    }}
 
 @Composable
 private fun AchievementsHeader(

@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.stores.steam
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -96,6 +97,8 @@ class SteamLoginActivity : FixedFontScaleComponentActivity() {
     // Root
     @Composable
     fun LoginContent(viewModel: SteamLoginViewModel) {
+    SmoothScreenTransition {
+
         val state by viewModel.loginState.collectAsState()
         var passwordVisible by remember { mutableStateOf(false) }
 
@@ -139,7 +142,8 @@ class SteamLoginActivity : FixedFontScaleComponentActivity() {
                 }
             }
         }
-    }
+    
+    }}
 
     // Landscape
     @Composable

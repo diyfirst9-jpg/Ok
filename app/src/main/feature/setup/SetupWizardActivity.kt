@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.setup
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import android.Manifest
 import android.app.Activity
@@ -1551,6 +1552,8 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
 
     @Composable
     private fun SetupWizardScreen() {
+    SmoothScreenTransition {
+
         val page by pageIndex
         val totalPages = 3
         val pageTitle =
@@ -1741,7 +1744,8 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 }
             }
         }
-    }
+    
+    }}
 
     @Composable
     private fun TransferStrip(state: TransferState) {

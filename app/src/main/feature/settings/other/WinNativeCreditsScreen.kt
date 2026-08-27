@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,8 @@ private val CreditsSub = Color(0xFFC7A88F)
  */
 @Composable
 fun WinNativeCreditsScreen(bridge: SettingsNavBridge? = null) {
+    SmoothScreenTransition {
+
     val context = LocalContext.current
     val contentNav = rememberSettingsContentNav(bridge)
 
@@ -98,7 +101,8 @@ fun WinNativeCreditsScreen(bridge: SettingsNavBridge? = null) {
             }
         }
     }
-}
+
+    }}
 
 internal data class WinNativeCredit(
     val name: String,

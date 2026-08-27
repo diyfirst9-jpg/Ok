@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -187,6 +188,8 @@ fun DebugScreen(
     onDeleteLogFile: (LogFileEntry) -> Unit,
     bridge: SettingsNavBridge? = null,
 ) {
+    SmoothScreenTransition {
+
     var showChannelsDialog by remember { mutableStateOf(false) }
     var showLogsBrowser by remember { mutableStateOf(false) }
     val layoutDirection = LocalLayoutDirection.current
@@ -352,7 +355,8 @@ fun DebugScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
-}
+
+    }}
 
 // Section label
 @Composable

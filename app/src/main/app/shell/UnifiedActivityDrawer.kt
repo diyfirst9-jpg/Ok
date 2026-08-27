@@ -262,7 +262,7 @@ internal fun UnifiedActivity.LoginRequiredScreen(
             stringResource(R.string.stores_accounts_sign_into_store, storeName)
         }
 
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxSize().smoothScreenEnter(), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(horizontal = 48.dp),
@@ -287,16 +287,12 @@ internal fun UnifiedActivity.LoginRequiredScreen(
                     androidx.compose.foundation.interaction
                         .MutableInteractionSource()
                 }
-            val isPressed by interactionSource.collectIsPressedAsState()
-            val btnScale = if (isPressed) 0.95f else 1f
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier
-                        .graphicsLayer {
-                            scaleX = btnScale
-                            scaleY = btnScale
-                        }.clickable(
+                        .smoothPress(interactionSource, pressedScale = 0.96f)
+                        .clickable(
                             interactionSource = interactionSource,
                             indication = null,
                             onClick = onLoginClick,
@@ -346,6 +342,7 @@ internal fun UnifiedActivity.DrawerContent(
         Column(
             Modifier
                 .fillMaxHeight()
+                .smoothScreenEnter()
                 .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp),

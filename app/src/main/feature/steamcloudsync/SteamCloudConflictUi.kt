@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.steamcloudsync
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -66,6 +67,8 @@ internal fun SteamCloudConflictDialogContent(
     onUseCloud: (keepBackup: Boolean) -> Unit,
     onUseLocal: (keepBackup: Boolean) -> Unit,
 ) {
+    SmoothScreenTransition {
+
     val scrollState = rememberScrollState()
     var keepBackup by remember { mutableStateOf(initialKeepBackup) }
 
@@ -198,7 +201,8 @@ internal fun SteamCloudConflictDialogContent(
         }
     }
     }
-}
+
+    }}
 
 @Composable
 private fun VersionLine(

@@ -633,7 +633,7 @@ internal fun UnifiedActivity.EpicStoreTab(
         JoystickListScroll(listViewState, activity?.rightStickScrollState)
         ListView(
             items = displayedApps,
-            modifier = Modifier.tabScreenPadding(),
+            modifier = Modifier.tabScreenPadding().smoothScreenEnter(),
             listState = listViewState,
             contentPadding = TabListContentPadding,
             keyOf = { it.id },
@@ -650,15 +650,12 @@ internal fun UnifiedActivity.EpicStoreTab(
         }
     } else {
         val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
-        val focusRequesters =
-            remember(displayedApps.size) {
-                List(displayedApps.size) { FocusRequester() }
-            }
-        LaunchedEffect(focusIndex, focusRequesters.size) {
-            if (searchQuery.isEmpty() && focusRequesters.isNotEmpty() && focusIndex in focusRequesters.indices) {
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(focusIndex, displayedApps.size) {
+            if (searchQuery.isEmpty() && displayedApps.isNotEmpty() && focusIndex in displayedApps.indices) {
                 gridState.scrollToItem(focusIndex)
                 try {
-                    focusRequesters[focusIndex].requestFocus()
+                    focusRequester.requestFocus()
                 } catch (_: Exception) {
                 }
             }
@@ -666,14 +663,14 @@ internal fun UnifiedActivity.EpicStoreTab(
         JoystickGridScroll(gridState, activity?.rightStickScrollState)
         FourByTwoGridView(
             items = displayedApps,
-            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding),
+            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding).smoothScreenEnter(),
             gridState = gridState,
             keyOf = { it.id },
         ) { app, index, rowHeight ->
             Box(
                 Modifier.height(rowHeight).then(
-                    if (index in focusRequesters.indices) {
-                        Modifier.focusRequester(focusRequesters[index])
+                    if (index == focusIndex) {
+                        Modifier.focusRequester(focusRequester)
                     } else {
                         Modifier
                     },
@@ -1321,7 +1318,7 @@ internal fun UnifiedActivity.GOGStoreTab(
         val listViewState = rememberLazyListState()
         ListView(
             items = displayedApps,
-            modifier = Modifier.tabScreenPadding(),
+            modifier = Modifier.tabScreenPadding().smoothScreenEnter(),
             listState = listViewState,
             contentPadding = TabListContentPadding,
             keyOf = { it.id },
@@ -1377,22 +1374,19 @@ internal fun UnifiedActivity.GOGStoreTab(
         }
     } else {
         val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
-        val focusRequesters =
-            remember(displayedApps.size) {
-                List(displayedApps.size) { FocusRequester() }
-            }
-        LaunchedEffect(focusIndex, focusRequesters.size) {
-            if (searchQuery.isEmpty() && focusRequesters.isNotEmpty() && focusIndex in focusRequesters.indices) {
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(focusIndex, displayedApps.size) {
+            if (searchQuery.isEmpty() && displayedApps.isNotEmpty() && focusIndex in displayedApps.indices) {
                 gridState.scrollToItem(focusIndex)
                 try {
-                    focusRequesters[focusIndex].requestFocus()
+                    focusRequester.requestFocus()
                 } catch (_: Exception) {
                 }
             }
         }
         FourByTwoGridView(
             items = displayedApps,
-            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding),
+            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding).smoothScreenEnter(),
             gridState = gridState,
             keyOf = { it.id },
         ) { app, index, rowHeight ->
@@ -1405,8 +1399,8 @@ internal fun UnifiedActivity.GOGStoreTab(
                         .fillMaxWidth()
                         .height(rowHeight)
                         .then(
-                            if (index in focusRequesters.indices) {
-                                Modifier.focusRequester(focusRequesters[index])
+                            if (index == focusIndex) {
+                                Modifier.focusRequester(focusRequester)
                             } else {
                                 Modifier
                             },
@@ -1932,7 +1926,7 @@ internal fun UnifiedActivity.SteamStoreTab(
         JoystickListScroll(listViewState, activity?.rightStickScrollState, minSpeed = 2.5f, maxSpeed = 16f, quadratic = true)
         ListView(
             items = displayedApps,
-            modifier = Modifier.tabScreenPadding(),
+            modifier = Modifier.tabScreenPadding().smoothScreenEnter(),
             listState = listViewState,
             contentPadding = TabListContentPadding,
             keyOf = { it.id },
@@ -1950,15 +1944,12 @@ internal fun UnifiedActivity.SteamStoreTab(
         }
     } else {
         val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
-        val focusRequesters =
-            remember(displayedApps.size) {
-                List(displayedApps.size) { FocusRequester() }
-            }
-        LaunchedEffect(focusIndex, focusRequesters.size) {
-            if (searchQuery.isEmpty() && focusRequesters.isNotEmpty() && focusIndex in focusRequesters.indices) {
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(focusIndex, displayedApps.size) {
+            if (searchQuery.isEmpty() && displayedApps.isNotEmpty() && focusIndex in displayedApps.indices) {
                 gridState.scrollToItem(focusIndex)
                 try {
-                    focusRequesters[focusIndex].requestFocus()
+                    focusRequester.requestFocus()
                 } catch (_: Exception) {
                 }
             }
@@ -1969,14 +1960,14 @@ internal fun UnifiedActivity.SteamStoreTab(
         JoystickGridScroll(gridState, activity?.leftStickScrollState, deadZone = 0.15f, minSpeed = 0.3125f, maxSpeed = 2f)
         FourByTwoGridView(
             items = displayedApps,
-            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding),
+            modifier = Modifier.tabScreenPadding(top = TabGridTopPadding).smoothScreenEnter(),
             gridState = gridState,
             keyOf = { it.id },
         ) { app, index, rowHeight ->
             Box(
                 Modifier.height(rowHeight).then(
-                    if (index in focusRequesters.indices) {
-                        Modifier.focusRequester(focusRequesters[index])
+                    if (index == focusIndex) {
+                        Modifier.focusRequester(focusRequester)
                     } else {
                         Modifier
                     },

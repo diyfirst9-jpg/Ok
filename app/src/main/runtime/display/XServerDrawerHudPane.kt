@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
@@ -191,6 +193,8 @@ internal fun HUDPaneContent(
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
+    SmoothPanelEntry {
+
     var activeEditor by remember { mutableStateOf<HUDMetricEditor?>(null) }
     var fpsLimitMemory by remember {
         mutableStateOf(if (state.fpsLimit > 0) state.fpsLimit else FPS_LIMITER_DEFAULT)
@@ -409,6 +413,8 @@ internal fun HUDPaneContent(
             }
             }
         }
+    }
+
     }
 }
 

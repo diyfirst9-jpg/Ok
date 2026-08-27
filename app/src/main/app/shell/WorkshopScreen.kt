@@ -134,6 +134,7 @@ internal fun StoreWorkshopScreen(
         modifier =
             Modifier
                 .fillMaxSize()
+                .smoothScreenEnter()
                 // Dim the game-detail screen behind so the modal reads as foreground.
                 .background(WsScrim.copy(alpha = 0.6f))
                 .windowInsetsPadding(WindowInsets.navigationBars),

@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.sync
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import android.app.Activity
 import android.app.Dialog
@@ -155,6 +156,8 @@ internal fun EpicCloudConflictDialogContent(
     onUseCloud: (keepBackup: Boolean) -> Unit,
     onUseLocal: (keepBackup: Boolean) -> Unit,
 ) {
+    SmoothScreenTransition {
+
     val scrollState = rememberScrollState()
     var keepBackup by remember { mutableStateOf(true) }
 
@@ -283,7 +286,8 @@ internal fun EpicCloudConflictDialogContent(
         }
     }
     }
-}
+
+    }}
 
 @Composable
 private fun EpicKeepBackupCheckbox(

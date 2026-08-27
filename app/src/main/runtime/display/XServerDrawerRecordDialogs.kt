@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
@@ -193,6 +195,8 @@ internal fun RecordSettingsDialog(
     onDismiss: () -> Unit,
     onRecordNow: (fpsIndex: Int, resolutionIndex: Int, quality: Int, recordUI: Boolean) -> Unit,
 ) {
+    SmoothPanelEntry {
+
     val fpsOptions = config.fpsOptions.ifEmpty { listOf(60) }
     val resOptions = config.resolutionLabels.ifEmpty { listOf("Native") }
 
@@ -342,6 +346,8 @@ internal fun RecordSettingsDialog(
             }
         }
         }
+    }
+
     }
 }
 

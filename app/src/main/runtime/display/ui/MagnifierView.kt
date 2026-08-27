@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display.ui
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.AttributeSet
@@ -167,6 +169,8 @@ private fun MagnifierPanel(
     onDrag: (Float, Float) -> Unit,
     onDragEnd: () -> Unit,
 ) {
+    SmoothPanelEntry {
+
     var zoomLabel by remember { mutableStateOf("${(initialZoom * 100).toInt()}%") }
     LaunchedEffect(Unit) {
         registerZoomSetter { value ->
@@ -236,6 +240,8 @@ private fun MagnifierPanel(
                 onHide()
             }
         }
+    }
+
     }
 }
 

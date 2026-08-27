@@ -249,6 +249,7 @@ internal fun UnifiedActivity.LibraryDetailPopupFrame(
         modifier =
             Modifier
                 .fillMaxSize()
+                .smoothScreenEnter()
                 .background(Color.Black.copy(alpha = 0.58f))
                 .clickable(
                     interactionSource = dismissInteractionSource,

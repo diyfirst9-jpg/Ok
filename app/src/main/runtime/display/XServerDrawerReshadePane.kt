@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -48,6 +50,8 @@ internal fun ReshadePaneContent(
     state: XServerDrawerState,
     listener: XServerDrawerActionListener,
 ) {
+    SmoothPanelEntry {
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val paneScale = computePaneScale(maxHeight)
         CompositionLocalProvider(LocalPaneScale provides paneScale) {
@@ -83,6 +87,8 @@ internal fun ReshadePaneContent(
                 }
             }
         }
+    }
+
     }
 }
 

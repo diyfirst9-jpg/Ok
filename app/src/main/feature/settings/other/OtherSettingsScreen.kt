@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -160,6 +161,8 @@ fun OtherSettingsScreen(
     onReinstallImagefs: () -> Unit,
     bridge: SettingsNavBridge? = null,
 ) {
+    SmoothScreenTransition {
+
     var showReinstallDialog by remember { mutableStateOf(false) }
     val layoutDirection = LocalLayoutDirection.current
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues()
@@ -320,7 +323,8 @@ fun OtherSettingsScreen(
             Spacer(Modifier.height(24.dp + navBarBottomPadding))
         }
     }
-}
+
+    }}
 
 // Section label
 @Composable

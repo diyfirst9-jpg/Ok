@@ -175,7 +175,7 @@ internal fun LibraryGameLaunchScreen(
 
     LaunchScreenCutoutMode()
 
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().smoothScreenEnter()) {
         val edgePadding = 22.dp
         val bottomPadding = 20.dp
         // The stat-chip row and the action-button column share one horizontal Row; on a

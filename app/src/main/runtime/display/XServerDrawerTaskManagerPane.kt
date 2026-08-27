@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
@@ -192,6 +194,8 @@ internal fun TaskManagerPaneContent(
     listener: XServerDrawerActionListener,
     onClose: () -> Unit,
 ) {
+    SmoothPanelEntry {
+
     var showNewTaskDialog by remember { mutableStateOf(false) }
     var processPendingEnd by remember { mutableStateOf<TaskManagerProcess?>(null) }
     var expandedAffinityPid by remember { mutableStateOf<Int?>(null) }
@@ -318,6 +322,8 @@ internal fun TaskManagerPaneContent(
                 listener.onTaskManagerEndProcess(process.name)
             },
         )
+    }
+
     }
 }
 

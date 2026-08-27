@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.MarqueeSpacing
@@ -138,6 +139,8 @@ fun ComponentsScreen(
     onToggleAutoCreateContainer: (Boolean) -> Unit,
     onRefresh: () -> Unit,
 ) {
+    SmoothScreenTransition {
+
     var itemPendingRemoval by remember { mutableStateOf<ComponentItem?>(null) }
     val layoutDirection = LocalLayoutDirection.current
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues()
@@ -272,7 +275,8 @@ fun ComponentsScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
-}
+
+    }}
 
 // Hero header
 

@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -88,6 +90,8 @@ private data class GaugeSpec(
 
 @Composable
 fun PerformanceHudOverlay(modifier: Modifier = Modifier) {
+    SmoothPanelEntry {
+
     val s by PerformanceHudState.state.collectAsState()
     // A gauge stays while its element is enabled; a momentarily-unavailable value shows N/A rather than dropping the gauge (which would make the row jump).
     val gauges = ArrayList<GaugeSpec>(8)
@@ -148,6 +152,8 @@ fun PerformanceHudOverlay(modifier: Modifier = Modifier) {
                     .padding(horizontal = 16.dp, vertical = 6.dp),
             )
         }
+    }
+
     }
 }
 

@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -142,6 +143,8 @@ fun ContainersScreen(
     onClearCacheDialog: (Container) -> Unit,
     bridge: SettingsNavBridge? = null,
 ) {
+    SmoothScreenTransition {
+
     val layoutDirection = LocalLayoutDirection.current
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues()
     val navBarStartPadding = navBarPadding.calculateStartPadding(layoutDirection)
@@ -321,7 +324,8 @@ fun ContainersScreen(
             )
         }
     }
-}
+
+    }}
 
 @Composable
 private fun SectionLabel(text: String) {

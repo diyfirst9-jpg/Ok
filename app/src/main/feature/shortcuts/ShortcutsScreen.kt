@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.shortcuts
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -88,6 +89,8 @@ private fun ShortcutsScreen(
     shortcuts: List<Shortcut>,
     listener: ShortcutsActionListener,
 ) {
+    SmoothScreenTransition {
+
     Column(
         modifier =
             Modifier
@@ -129,7 +132,8 @@ private fun ShortcutsScreen(
             }
         }
     }
-}
+
+    }}
 
 @Composable
 private fun ShortcutRow(

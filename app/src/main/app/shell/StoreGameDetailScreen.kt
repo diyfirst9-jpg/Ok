@@ -174,7 +174,7 @@ internal fun StoreGameDetailScreen(
                 onDismiss = { if (sourceMenuOpen) sourceMenuOpen = false else onBack() },
             ) { if (sourceMenuOpen) menuRegistry else mainRegistry },
         )
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().smoothScreenEnter()) {
         val edgePadding = 22.dp
         val bottomPadding = 8.dp
         // The stat-chip row and the action-button column share one horizontal Row; on a

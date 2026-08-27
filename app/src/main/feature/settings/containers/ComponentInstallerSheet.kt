@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -172,6 +173,8 @@ fun ComponentInstallerSheet(
     container: Container,
     onDismiss: () -> Unit,
 ) {
+    SmoothScreenTransition {
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val installStates = remember { mutableStateMapOf<String, InstallUi>() }
@@ -291,7 +294,8 @@ fun ComponentInstallerSheet(
         }
         }
     }
-}
+
+    }}
 
 @Composable
 private fun SheetHeader(

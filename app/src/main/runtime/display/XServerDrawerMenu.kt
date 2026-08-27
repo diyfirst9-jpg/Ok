@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
@@ -1560,7 +1562,11 @@ internal fun XServerDrawerContent(
     menuNavRegion: Int = 0,
     menuNavIndex: Int = 0,
     menuActivateSignal: Int = 0,
-    onSetTabCount: (Int) -> Unit = {},
+    onSetTabCount: (Int) -> Unit = {
+    SmoothPanelEntry {
+
+    }
+},
     onSetCardLayout: (Int, Int) -> Unit = { _, _ -> },
     onSetBottomCount: (Int) -> Unit = {},
     onCursor: (Int, Int) -> Unit = { _, _ -> },

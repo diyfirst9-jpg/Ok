@@ -708,6 +708,7 @@ internal fun UnifiedActivity.UnifiedHub() {
         Box(
             Modifier
                 .fillMaxSize()
+                .smoothScreenEnter()
                 .background(BgDark)
                 .windowInsetsPadding(horizontalNavigationInsets),
         ) {
@@ -877,16 +878,16 @@ internal fun UnifiedActivity.UnifiedHub() {
                         transitionSpec = {
                             val forward = targetState.hashCode() >= initialState.hashCode()
                             (
-                                fadeIn(animationSpec = tween(180)) +
+                                fadeIn(animationSpec = tween(140)) +
                                     slideInHorizontally(
-                                        animationSpec = tween(180),
-                                        initialOffsetX = { width -> if (forward) width / 18 else -width / 18 },
+                                        animationSpec = tween(90),
+                                        initialOffsetX = { width -> if (forward) width / 24 else -width / 24 },
                                     )
                             ) togetherWith (
-                                fadeOut(animationSpec = tween(120)) +
+                                fadeOut(animationSpec = tween(90)) +
                                     slideOutHorizontally(
-                                        animationSpec = tween(120),
-                                        targetOffsetX = { width -> if (forward) -width / 28 else width / 28 },
+                                        animationSpec = tween(90),
+                                        targetOffsetX = { width -> if (forward) -width / 36 else width / 36 },
                                     )
                             )
                         },
@@ -1474,12 +1475,12 @@ internal fun UnifiedActivity.TopBar(
                                 val interactionSource = remember { MutableInteractionSource() }
                                 val textColor by animateColorAsState(
                                     targetValue = if (selected) Accent else TextSecondary,
-                                    animationSpec = tween(140),
+                                    animationSpec = tween(90),
                                     label = "tabTextColor",
                                 )
                                 val tabBackground by animateColorAsState(
                                     targetValue = if (selected) Accent.copy(alpha = 0.10f) else Color.Transparent,
-                                    animationSpec = tween(160),
+                                    animationSpec = tween(100),
                                     label = "tabBackground",
                                 )
 
@@ -1660,8 +1661,8 @@ internal fun UnifiedActivity.TopBar(
         // the window below visibly slide down to make room instead.
         AnimatedVisibility(
             visible = isSearchExpanded && !isDownloadsTab,
-            enter = expandVertically(animationSpec = tween(220), expandFrom = Alignment.Top) + fadeIn(tween(220)),
-            exit = shrinkVertically(animationSpec = tween(180), shrinkTowards = Alignment.Top) + fadeOut(tween(180)),
+            enter = expandVertically(animationSpec = tween(150), expandFrom = Alignment.Top) + fadeIn(tween(150)),
+            exit = shrinkVertically(animationSpec = tween(90), shrinkTowards = Alignment.Top) + fadeOut(tween(140)),
         ) {
             Box(
                 modifier =
@@ -1819,13 +1820,11 @@ private fun CornerActionButton(
     val buttonSize = 64.dp * uiScale
     val iconSize = 24.dp * uiScale
     val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-    val pressScale = if (pressed) 0.94f else 1f
     Box(
         modifier =
             Modifier
                 .size(buttonSize)
-                .graphicsLayer { scaleX = pressScale; scaleY = pressScale }
+                .smoothPress(interactionSource, pressedScale = 0.95f)
                 .clip(CircleShape)
                 .background(CardDark)
                 .border(1.dp, CardBorder, CircleShape),
@@ -2342,23 +2341,21 @@ internal fun UnifiedActivity.LibraryCarousel(
         }
     }
 
-    // FocusRequesters for each grid item
-    val focusRequesters =
-        remember(displayedApps.size) {
-            List(displayedApps.size) { FocusRequester() }
-        }
+    // Only the currently focused item needs a FocusRequester. Keeping one requester per
+    // game makes large libraries unnecessarily heavy and increases composition pressure.
+    val focusRequester = remember { FocusRequester() }
 
     // Observe focus index changes from the activity and request focus on the target item
     val focusIndex by (activity?.libraryFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
-    LaunchedEffect(focusIndex, focusRequesters.size, layoutMode) {
+    LaunchedEffect(focusIndex, displayedApps.size, layoutMode) {
         if (searchQuery.isEmpty() &&
             layoutMode == LibraryLayoutMode.GRID_4 &&
-            focusRequesters.isNotEmpty() &&
-            focusIndex in focusRequesters.indices
+            displayedApps.isNotEmpty() &&
+            focusIndex in displayedApps.indices
         ) {
             gridState.scrollToItem(focusIndex)
             try {
-                focusRequesters[focusIndex].requestFocus()
+                focusRequester.requestFocus()
             } catch (_: Exception) {
             }
         }
@@ -2514,8 +2511,8 @@ internal fun UnifiedActivity.LibraryCarousel(
                             Modifier
                                 .height(rowHeight)
                                 .then(
-                                    if (index in focusRequesters.indices) {
-                                        Modifier.focusRequester(focusRequesters[index])
+                                    if (index == focusIndex) {
+                                        Modifier.focusRequester(focusRequester)
                                     } else {
                                         Modifier
                                     },
@@ -2564,8 +2561,8 @@ internal fun UnifiedActivity.LibraryCarousel(
                                         Modifier
                                             .fillMaxSize()
                                             .then(
-                                                if (index in focusRequesters.indices) {
-                                                    Modifier.focusRequester(focusRequesters[index])
+                                                if (index == focusIndex) {
+                                                    Modifier.focusRequester(focusRequester)
                                                 } else {
                                                     Modifier
                                                 },
@@ -2663,8 +2660,8 @@ internal fun UnifiedActivity.LibraryCarousel(
                         modifier =
                             Modifier
                                 .then(
-                                    if (index in focusRequesters.indices) {
-                                        Modifier.focusRequester(focusRequesters[index])
+                                    if (index == focusIndex) {
+                                        Modifier.focusRequester(focusRequester)
                                     } else {
                                         Modifier
                                     },

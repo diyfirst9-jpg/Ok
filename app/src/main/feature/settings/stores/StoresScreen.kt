@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -120,6 +121,8 @@ fun StoresScreen(
     onContainerLanguageSelected: (Int) -> Unit,
     bridge: SettingsNavBridge? = null,
 ) {
+    SmoothScreenTransition {
+
     val layoutDirection = LocalLayoutDirection.current
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues()
     val navBarStartPadding = navBarPadding.calculateStartPadding(layoutDirection)
@@ -257,7 +260,8 @@ fun StoresScreen(
             Spacer(Modifier.height(24.dp + navBarBottomPadding))
         }
     }
-}
+
+    }}
 
 // Section label
 @Composable

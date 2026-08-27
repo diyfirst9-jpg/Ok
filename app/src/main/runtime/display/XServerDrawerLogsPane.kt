@@ -1,5 +1,7 @@
 package com.winlator.cmod.runtime.display
 
+import com.winlator.cmod.runtime.display.ui.SmoothPanelEntry
+
 import android.app.Activity
 import android.content.Context
 import androidx.compose.animation.AnimatedContent
@@ -192,6 +194,8 @@ internal fun LogsPaneContent(
     listener: XServerDrawerActionListener,
     onClose: () -> Unit,
 ) {
+    SmoothPanelEntry {
+
     DisposableEffect(Unit) {
         listener.onLogsPaneVisibilityChanged(true)
         onDispose { listener.onLogsPaneVisibilityChanged(false) }
@@ -222,6 +226,8 @@ internal fun LogsPaneContent(
                 )
             }
         }
+    }
+
     }
 }
 

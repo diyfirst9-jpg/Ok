@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.settings
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -179,6 +180,8 @@ fun PresetsScreen(
     suggestedNewPresetName: () -> String,
     bridge: SettingsNavBridge? = null,
 ) {
+    SmoothScreenTransition {
+
     var showNewDialog by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var showRemoveConfirm by remember { mutableStateOf(false) }
@@ -335,7 +338,8 @@ fun PresetsScreen(
             Spacer(Modifier.height(24.dp))
         }
     }
-}
+
+    }}
 
 
 @Composable

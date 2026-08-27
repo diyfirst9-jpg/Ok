@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.sync.google
+import com.winlator.cmod.shared.ui.SmoothScreenTransition
 import android.app.Activity
 import android.text.format.DateUtils
 import androidx.compose.animation.core.animateFloatAsState
@@ -85,6 +86,8 @@ private val StoreLoginActionButtonWidth = 112.dp
 
 @Composable
 fun GoogleScreen(bridge: SettingsNavBridge? = null) {
+    SmoothScreenTransition {
+
     val context = LocalContext.current
     val activity = context as? Activity
     val scope = rememberCoroutineScope()
@@ -237,7 +240,8 @@ fun GoogleScreen(bridge: SettingsNavBridge? = null) {
             )
         }
     }
-}
+
+    }}
 
 @Composable
 private fun SectionLabel(

@@ -1303,7 +1303,6 @@ Installert bane:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Skysynkronisering</string>
-    <string name="google_cloud_sync_started">Skysynkronisering startet.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google-tjenester</string>
     <string name="google_auto_signin_title">Logg inn på Google ved oppstart</string>
@@ -1390,20 +1389,15 @@ Installert bane:
     <string name="cloud_saves_gog_zip_success">GOG-skylagringer-zip lagret.</string>
     <string name="cloud_saves_gog_zip_failed">Kunne ikke lagre GOG-skylagringer-zip.</string>
     <string name="cloud_saves_gog_zip_empty">Ingen GOG-skylagringsfiler funnet.</string>
-    <string name="cloud_saves_google_backup_label">Sikkerhetskopier til Google</string>
-    <string name="cloud_saves_google_backup_helper">Lagre en kopi til Google Play Games</string>
-    <string name="cloud_saves_google_backup_no_save">Ingen lagringsfiler funnet å sikkerhetskopiere.</string>
     <string name="cloud_saves_history_title">Lagringshistorikk</string>
     <string name="cloud_saves_history_empty">Ingen tidligere lagringer sikkerhetskopiert ennå. Erstattede lagringer og manuelle sikkerhetskopier vises her i 30 dager.</string>
     <string name="cloud_saves_history_loading">Laster lagringshistorikk…</string>
-    <string name="cloud_saves_history_sign_in">Logg inn på Google for å se lagringshistorikken din.</string>
     <string name="cloud_saves_history_origin_local">lokal</string>
     <string name="cloud_saves_history_origin_cloud">sky</string>
     <string name="cloud_saves_history_origin_manual">manuell</string>
     <string name="cloud_saves_history_origin_auto">automatisk</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Gjenopprett</string>

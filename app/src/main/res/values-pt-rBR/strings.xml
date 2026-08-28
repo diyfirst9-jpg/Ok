@@ -1012,7 +1012,6 @@ Caminho instalado:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Sincronizacao na Nuvem</string>
-    <string name="google_cloud_sync_started">Sincronizacao na nuvem iniciada.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Servicos Google</string>
     <string name="google_auto_signin_title">Entrar no Google ao iniciar</string>
@@ -1198,7 +1197,6 @@ Caminho instalado:
     <string name="cloud_saves_history_loading">Carregando histórico de saves\u2026</string>
     <string name="cloud_saves_history_origin_auto">auto</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">nuvem</string>
@@ -1217,7 +1215,6 @@ Caminho instalado:
     <string name="cloud_saves_history_restore_confirm_title">Restaurar este backup?</string>
     <string name="cloud_saves_history_restore_failed">Não foi possível restaurar este backup.</string>
     <string name="cloud_saves_history_restore_success">Save restaurado do backup.</string>
-    <string name="cloud_saves_history_sign_in">Faça login no Google para ver seu histórico de saves.</string>
     <string name="cloud_saves_history_title">Histórico de Saves</string>
     <string name="cloud_saves_history_download">Baixar</string>
     <string name="cloud_saves_history_download_success">Arquivo baixado.</string>
@@ -1603,9 +1600,6 @@ Caminho instalado:
     <string name="file_manager_delete_failed">Falha ao excluir</string>
     <string name="file_manager_rename_failed">Falha ao renomear</string>
     <string name="file_manager_create_folder_failed">Falha ao criar pasta</string>
-    <string name="cloud_saves_google_backup_helper">Salvar uma cópia no Google Play Games</string>
-    <string name="cloud_saves_google_backup_label">Backup no Google</string>
-    <string name="cloud_saves_google_backup_no_save">Nenhum arquivo de salvamento encontrado para backup.</string>
     <string name="cloud_saves_history_cloud_readonly">Somente leitura</string>
     <string name="session_drawer_rail_label_record">Gravar</string>
     <string name="session_record_failed">Não foi possível iniciar a gravação</string>

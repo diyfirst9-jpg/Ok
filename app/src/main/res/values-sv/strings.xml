@@ -1303,7 +1303,6 @@ Installerad sökväg:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Molnsynkronisering</string>
-    <string name="google_cloud_sync_started">Molnsynkronisering startad.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google-tjänster</string>
     <string name="google_auto_signin_title">Logga in på Google vid start</string>
@@ -1390,20 +1389,15 @@ Installerad sökväg:
     <string name="cloud_saves_gog_zip_success">Zip med GOG-molnsparningar sparad.</string>
     <string name="cloud_saves_gog_zip_failed">Det gick inte att spara zip med GOG-molnsparningar.</string>
     <string name="cloud_saves_gog_zip_empty">Inga GOG-molnsparningsfiler hittades.</string>
-    <string name="cloud_saves_google_backup_label">Säkerhetskopiera till Google</string>
-    <string name="cloud_saves_google_backup_helper">Spara en kopia till Google Play Games</string>
-    <string name="cloud_saves_google_backup_no_save">Inga sparningsfiler hittades att säkerhetskopiera.</string>
     <string name="cloud_saves_history_title">Sparningshistorik</string>
     <string name="cloud_saves_history_empty">Inga tidigare sparningar har säkerhetskopierats ännu. Ersatta sparningar och manuella säkerhetskopior visas här i 30 dagar.</string>
     <string name="cloud_saves_history_loading">Laddar sparningshistorik…</string>
-    <string name="cloud_saves_history_sign_in">Logga in på Google för att se din sparningshistorik.</string>
     <string name="cloud_saves_history_origin_local">lokal</string>
     <string name="cloud_saves_history_origin_cloud">moln</string>
     <string name="cloud_saves_history_origin_manual">manuell</string>
     <string name="cloud_saves_history_origin_auto">automatisk</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Återställ</string>

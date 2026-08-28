@@ -1012,7 +1012,6 @@ Percorso installato:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Sincronizzazione cloud</string>
-    <string name="google_cloud_sync_started">Sincronizzazione cloud avviata.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Servizi Google</string>
     <string name="google_auto_signin_title">Accedi a Google all\'avvio</string>
@@ -1198,7 +1197,6 @@ Percorso installato:
     <string name="cloud_saves_history_loading">Caricamento cronologia salvataggi\u2026</string>
     <string name="cloud_saves_history_origin_auto">auto</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">cloud</string>
@@ -1217,7 +1215,6 @@ Percorso installato:
     <string name="cloud_saves_history_restore_confirm_title">Ripristinare questo backup?</string>
     <string name="cloud_saves_history_restore_failed">Impossibile ripristinare questo backup.</string>
     <string name="cloud_saves_history_restore_success">Salvataggio ripristinato dal backup.</string>
-    <string name="cloud_saves_history_sign_in">Accedi a Google per visualizzare la cronologia dei salvataggi.</string>
     <string name="cloud_saves_history_title">Cronologia salvataggi</string>
     <string name="cloud_saves_history_download">Scarica</string>
     <string name="cloud_saves_history_download_success">File scaricato.</string>
@@ -1603,9 +1600,6 @@ Percorso installato:
     <string name="file_manager_delete_failed">Eliminazione non riuscita</string>
     <string name="file_manager_rename_failed">Rinomina non riuscita</string>
     <string name="file_manager_create_folder_failed">Creazione cartella non riuscita</string>
-    <string name="cloud_saves_google_backup_helper">Salva una copia su Google Play Games</string>
-    <string name="cloud_saves_google_backup_label">Backup su Google</string>
-    <string name="cloud_saves_google_backup_no_save">Nessun file di salvataggio da sottoporre a backup.</string>
     <string name="cloud_saves_history_cloud_readonly">Sola lettura</string>
     <string name="session_drawer_rail_label_record">Registra</string>
     <string name="session_record_failed">Impossibile avviare la registrazione</string>

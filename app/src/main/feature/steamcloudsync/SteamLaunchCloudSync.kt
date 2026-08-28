@@ -8,8 +8,7 @@ import com.winlator.cmod.R
 import com.winlator.cmod.feature.stores.steam.data.PostSyncInfo
 import com.winlator.cmod.feature.stores.steam.enums.SaveLocation
 import com.winlator.cmod.feature.stores.steam.enums.SyncResult
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
-import com.winlator.cmod.feature.sync.google.GoogleAuthMode
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.runtime.container.Shortcut
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -22,7 +21,7 @@ object SteamLaunchCloudSync {
         fun show(text: String)
     }
 
-    /** Launch-time Steam cloud reconciliation. Steam-only — never starts Google Play Games or Drive consent. */
+    /** Launch-time Steam cloud reconciliation. Steam-only. */
     @JvmStatic
     fun syncBeforeLaunch(
         activity: Activity,
@@ -135,7 +134,7 @@ object SteamLaunchCloudSync {
 
         if (keepBackup && useCloud) {
             // "Use Cloud" overwrites the LOCAL save — snapshot it first.
-            backupDiscardedSave(activity, shortcut, GameSaveBackupManager.BackupOrigin.LOCAL)
+            backupDiscardedSave(activity, shortcut, SaveBackupManager.BackupOrigin.LOCAL)
         }
         if (keepBackup && !useCloud) {
             // "Use Local" overwrites the CLOUD save (maybe newer progress from another device); Steam keeps no server-side history, so capture the cloud copy first.
@@ -158,20 +157,19 @@ object SteamLaunchCloudSync {
     private fun backupDiscardedSave(
         activity: Activity,
         shortcut: Shortcut,
-        origin: GameSaveBackupManager.BackupOrigin,
+        origin: SaveBackupManager.BackupOrigin,
     ) {
         val gameId = shortcut.getExtra("app_id").takeIf { it.isNotEmpty() } ?: return
         val gameName = shortcut.name ?: "Unknown"
         try {
             val result =
                 runBlocking(Dispatchers.IO) {
-                    GameSaveBackupManager.backupDiscardedSave(
+                    SaveBackupManager.backupDiscardedSave(
                         activity = activity,
-                        gameSource = GameSaveBackupManager.GameSource.STEAM,
+                        gameSource = SaveBackupManager.GameSource.STEAM,
                         gameId = gameId,
                         gameName = gameName,
                         origin = origin,
-                        authMode = GoogleAuthMode.RESUME,
                         containerHint = SteamCloudSyncHelper.resolveShortcutContainer(activity, shortcut),
                     )
                 }

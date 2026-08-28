@@ -23,7 +23,7 @@ sealed class StoreSessionEvent {
     ) : StoreSessionEvent()
 
     /**
-     * Credentials were just restored from a Google Play Games cloud snapshot —
+     * Credentials were just restored from a cloud snapshot —
      * user-visible so it's clear why they went from "signed out" to "signed in"
      * without an explicit login prompt.
      */

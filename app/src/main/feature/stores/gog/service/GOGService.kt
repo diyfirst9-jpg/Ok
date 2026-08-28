@@ -18,7 +18,7 @@ import com.winlator.cmod.feature.stores.steam.enums.Marker
 import com.winlator.cmod.feature.stores.steam.events.AndroidEvent
 import com.winlator.cmod.feature.stores.steam.utils.ContainerUtils
 import com.winlator.cmod.feature.stores.steam.utils.MarkerUtils
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupResult
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupResult
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.system.SessionKeepAliveService
 import com.winlator.cmod.shared.android.AppTerminationHelper

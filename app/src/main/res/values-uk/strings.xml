@@ -1018,7 +1018,6 @@
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Хмарна синхронізація</string>
-    <string name="google_cloud_sync_started">Хмарну синхронізацію розпочато.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Сервіси Google</string>
     <string name="google_auto_signin_title">Вхід у Google під час запуску</string>
@@ -1204,7 +1203,6 @@
     <string name="cloud_saves_history_loading">Завантаження історії збережень\u2026</string>
     <string name="cloud_saves_history_origin_auto">авто</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">хмара</string>
@@ -1223,7 +1221,6 @@
     <string name="cloud_saves_history_restore_confirm_title">Відновити цю резервну копію?</string>
     <string name="cloud_saves_history_restore_failed">Не вдалося відновити цю резервну копію.</string>
     <string name="cloud_saves_history_restore_success">Збереження відновлено з резервної копії.</string>
-    <string name="cloud_saves_history_sign_in">Увійдіть у Google, щоб переглянути історію збережень.</string>
     <string name="cloud_saves_history_title">Історія збережень</string>
     <string name="cloud_saves_history_download">Завантажити</string>
     <string name="cloud_saves_history_download_success">Файл завантажено.</string>
@@ -1609,9 +1606,6 @@
     <string name="file_manager_delete_failed">Не вдалося видалити</string>
     <string name="file_manager_rename_failed">Не вдалося перейменувати</string>
     <string name="file_manager_create_folder_failed">Не вдалося створити теку</string>
-    <string name="cloud_saves_google_backup_helper">Зберегти копію в Google Play Games</string>
-    <string name="cloud_saves_google_backup_label">Резервна копія в Google</string>
-    <string name="cloud_saves_google_backup_no_save">Не знайдено файлів збереження для резервного копіювання.</string>
     <string name="cloud_saves_history_cloud_readonly">Лише читання</string>
     <string name="session_drawer_rail_label_record">Запис</string>
     <string name="session_record_failed">Не вдалося почати запис</string>

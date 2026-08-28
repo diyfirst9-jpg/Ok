@@ -1012,7 +1012,6 @@ Ruta instalada:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Sincronización en la nube</string>
-    <string name="google_cloud_sync_started">Sincronización en la nube iniciada.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Servicios de Google</string>
     <string name="google_auto_signin_title">Iniciar sesión en Google al abrir</string>
@@ -1198,7 +1197,6 @@ Ruta instalada:
     <string name="cloud_saves_history_loading">Cargando historial de partidas\u2026</string>
     <string name="cloud_saves_history_origin_auto">auto</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">nube</string>
@@ -1217,7 +1215,6 @@ Ruta instalada:
     <string name="cloud_saves_history_restore_confirm_title">¿Restaurar esta copia de seguridad?</string>
     <string name="cloud_saves_history_restore_failed">No se pudo restaurar esta copia de seguridad.</string>
     <string name="cloud_saves_history_restore_success">Partida restaurada desde la copia de seguridad.</string>
-    <string name="cloud_saves_history_sign_in">Inicia sesión en Google para ver tu historial de partidas.</string>
     <string name="cloud_saves_history_title">Historial de partidas</string>
     <string name="cloud_saves_history_download">Descargar</string>
     <string name="cloud_saves_history_download_success">Archivo descargado.</string>
@@ -1603,9 +1600,6 @@ Ruta instalada:
     <string name="file_manager_delete_failed">Error al eliminar</string>
     <string name="file_manager_rename_failed">Error al renombrar</string>
     <string name="file_manager_create_folder_failed">Error al crear la carpeta</string>
-    <string name="cloud_saves_google_backup_helper">Guardar una copia en Google Play Games</string>
-    <string name="cloud_saves_google_backup_label">Copia de seguridad en Google</string>
-    <string name="cloud_saves_google_backup_no_save">No se encontraron archivos de guardado para respaldar.</string>
     <string name="cloud_saves_history_cloud_readonly">Solo lectura</string>
     <string name="session_drawer_rail_label_record">Grabar</string>
     <string name="session_record_failed">No se pudo iniciar la grabación</string>

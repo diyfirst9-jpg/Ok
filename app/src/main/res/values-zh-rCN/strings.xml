@@ -1012,7 +1012,6 @@
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">云同步</string>
-    <string name="google_cloud_sync_started">云同步已开始。</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google 服务</string>
     <string name="google_auto_signin_title">启动时登录 Google</string>
@@ -1198,7 +1197,6 @@
     <string name="cloud_saves_history_loading">正在加载存档历史\u2026</string>
     <string name="cloud_saves_history_origin_auto">自动</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">云端</string>
@@ -1217,7 +1215,6 @@
     <string name="cloud_saves_history_restore_confirm_title">还原此备份？</string>
     <string name="cloud_saves_history_restore_failed">无法还原此备份。</string>
     <string name="cloud_saves_history_restore_success">已从备份还原存档。</string>
-    <string name="cloud_saves_history_sign_in">登录 Google 以查看存档历史。</string>
     <string name="cloud_saves_history_title">存档历史</string>
     <string name="cloud_saves_history_download">下载</string>
     <string name="cloud_saves_history_download_success">文件已下载。</string>
@@ -1603,9 +1600,6 @@
     <string name="file_manager_delete_failed">删除失败</string>
     <string name="file_manager_rename_failed">重命名失败</string>
     <string name="file_manager_create_folder_failed">创建文件夹失败</string>
-    <string name="cloud_saves_google_backup_helper">将副本保存到 Google Play 游戏</string>
-    <string name="cloud_saves_google_backup_label">备份到 Google</string>
-    <string name="cloud_saves_google_backup_no_save">未找到可备份的存档文件。</string>
     <string name="cloud_saves_history_cloud_readonly">只读</string>
     <string name="session_drawer_rail_label_record">录制</string>
     <string name="session_record_failed">无法开始录制</string>

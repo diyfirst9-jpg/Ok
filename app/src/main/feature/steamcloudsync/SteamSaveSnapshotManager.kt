@@ -9,14 +9,14 @@ import com.winlator.cmod.feature.stores.steam.utils.ContainerUtils
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.container.ContainerManager
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupHistoryEntry
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupOrigin
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupResult
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupStorage
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.MAX_HISTORY_ENTRIES
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.HISTORY_MAX_AGE_DAYS
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.MAX_HISTORY_LABEL_LENGTH
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.sanitizeHistoryLabel
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupHistoryEntry
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupOrigin
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupResult
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupStorage
+import com.winlator.cmod.feature.sync.SaveBackupManager.MAX_HISTORY_ENTRIES
+import com.winlator.cmod.feature.sync.SaveBackupManager.HISTORY_MAX_AGE_DAYS
+import com.winlator.cmod.feature.sync.SaveBackupManager.MAX_HISTORY_LABEL_LENGTH
+import com.winlator.cmod.feature.sync.SaveBackupManager.sanitizeHistoryLabel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -643,8 +643,8 @@ object SteamSaveSnapshotManager {
         return sources.values.toList()
     }
 
-    /** Public view of [enumerateSaveSources] (zipRoot -> live dir) so [GameSaveBackupManager] mirrors Steam saves to/from Google. */
-    fun enumerateGoogleSaveSources(
+    /** Public view of [enumerateSaveSources] (zipRoot -> live dir) for local save-source enumeration. */
+    fun enumerateSaveSources(
         context: Context,
         appId: Int,
         forRestore: Boolean,

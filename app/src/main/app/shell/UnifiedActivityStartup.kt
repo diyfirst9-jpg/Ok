@@ -174,8 +174,7 @@ import com.winlator.cmod.feature.stores.steam.service.SteamService
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.feature.stores.steam.utils.getAvatarURL
 import com.winlator.cmod.feature.sync.CloudSyncHelper
-import com.winlator.cmod.feature.sync.google.CloudSyncManager
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.feature.sync.ui.CloudSavesContent
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.container.Shortcut
@@ -428,26 +427,7 @@ internal fun UnifiedActivity.bootstrapStartupState() {
     }
 }
 
-/** When the "Sign in to Google on launch" toggle is on, attempt a silent Play Games sign-in once per launch. */
-internal fun UnifiedActivity.maybeAutoSignInGoogleOnLaunch() {
-    if (!com.winlator.cmod.feature.sync.google.CloudSyncManager.isAutoSignInOnLaunchEnabled(this)) return
-    runCatching {
-        com.winlator.cmod.feature.sync.google.PlayGamesBootstrap.ensureInitialized(this)
-        com.google.android.gms.games.PlayGames
-            .getGamesSignInClient(this)
-            .signIn()
-            .addOnCompleteListener { task ->
-                val authed = task.isSuccessful && task.result?.isAuthenticated == true
-                if (authed) {
-                    com.winlator.cmod.feature.sync.google.GameSaveBackupManager
-                        .setDriveConnected(applicationContext, true)
-                    retryPendingRetroCloudBackup()
-                }
-            }
-    }.onFailure {
-        timber.log.Timber.tag("UnifiedActivity").w(it, "Auto Google sign-in on launch failed")
-    }
-}
+
 
 internal fun UnifiedActivity.scheduleDeferredStoreBootstrap() {
     window.decorView.post {

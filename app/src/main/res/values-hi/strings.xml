@@ -1118,7 +1118,6 @@
     <string name="steam_login_enter_steam_guard_code">अपना Steam Guard कोड दर्ज करें</string>
     <string name="steam_login_code">कोड</string>
     <string name="google_cloud_title">क्लाउड सिंक</string>
-    <string name="google_cloud_sync_started">क्लाउड सिंक शुरू हुआ।</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google सेवाएँ</string>
     <string name="google_auto_signin_title">लॉन्च पर Google में साइन इन करें</string>
@@ -1202,13 +1201,11 @@
     <string name="cloud_saves_history_download_failed">डाउनलोड विफल रहा।</string>
     <string name="cloud_saves_history_empty">अभी तक किसी पिछली सेव का बैकअप नहीं है। बदली गई सेव और मैन्युअल बैकअप यहाँ 30 दिनों तक दिखेंगे।</string>
     <string name="cloud_saves_history_loading">सेव इतिहास लोड हो रहा है\u2026</string>
-    <string name="cloud_saves_history_sign_in">अपना सेव इतिहास देखने के लिए Google में साइन इन करें।</string>
     <string name="cloud_saves_history_origin_local">स्थानीय</string>
     <string name="cloud_saves_history_origin_cloud">क्लाउड</string>
     <string name="cloud_saves_history_origin_manual">मैनुअल</string>
     <string name="cloud_saves_history_origin_auto">ऑटो</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">पुनर्स्थापित करें</string>
@@ -1539,9 +1536,6 @@
     <string name="file_manager_delete_failed">हटाना विफल रहा</string>
     <string name="file_manager_rename_failed">नाम बदलना विफल रहा</string>
     <string name="file_manager_create_folder_failed">फ़ोल्डर बनाना विफल रहा</string>
-    <string name="cloud_saves_google_backup_helper">Google Play Games में एक प्रति सहेजें</string>
-    <string name="cloud_saves_google_backup_label">Google पर बैकअप लें</string>
-    <string name="cloud_saves_google_backup_no_save">बैकअप के लिए कोई सेव फ़ाइल नहीं मिली।</string>
     <string name="cloud_saves_history_cloud_readonly">केवल पढ़ने योग्य</string>
     <string name="session_drawer_rail_label_record">रिकॉर्ड करें</string>
     <string name="session_record_failed">रिकॉर्डिंग शुरू नहीं हो सकी</string>

@@ -4,7 +4,7 @@ import com.winlator.cmod.feature.stores.epic.service.EpicCloudSavesManager
 import com.winlator.cmod.feature.stores.gog.service.GOGCloudSavesManager
 import com.winlator.cmod.feature.stores.gog.service.GOGService
 import com.winlator.cmod.feature.steamcloudsync.SteamCloudSyncHelper
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.runtime.container.Shortcut
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
@@ -432,23 +432,23 @@ object CloudSyncHelper {
     @JvmOverloads
     fun downloadCloudSaves(
         context: Context,
-        source: GameSaveBackupManager.GameSource,
+        source: SaveBackupManager.GameSource,
         gameId: String,
         shortcut: Shortcut? = null,
     ): Boolean {
         val result =
             runBlocking {
                 when (source) {
-                    GameSaveBackupManager.GameSource.STEAM -> {
+                    SaveBackupManager.GameSource.STEAM -> {
                         SteamCloudSyncHelper.forceDownloadById(context, gameId.toIntOrNull() ?: return@runBlocking false)
                     }
-                    GameSaveBackupManager.GameSource.EPIC -> {
+                    SaveBackupManager.GameSource.EPIC -> {
                         val appId = gameId.toIntOrNull() ?: return@runBlocking false
                         forceEpicDownloadById(context, appId, shortcut?.let(::epicTargetContainerId))
                     }
-                    GameSaveBackupManager.GameSource.GOG ->
+                    SaveBackupManager.GameSource.GOG ->
                         forceGogDownloadById(context, gameId, shortcut?.let(::gogTargetContainerId))
-                    GameSaveBackupManager.GameSource.CUSTOM -> false
+                    SaveBackupManager.GameSource.CUSTOM -> false
                 }
             }
         if (result) {
@@ -460,7 +460,7 @@ object CloudSyncHelper {
 
     private fun markCloudSaveSyncedById(
         context: Context,
-        source: GameSaveBackupManager.GameSource,
+        source: SaveBackupManager.GameSource,
         gameId: String,
     ) {
         if (gameId.isEmpty()) return

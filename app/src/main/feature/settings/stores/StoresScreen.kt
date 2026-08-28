@@ -418,7 +418,7 @@ private fun StoreCard(
                                     R.string.common_ui_signed_in,
                                 )
                             } else {
-                                stringResource(R.string.google_cloud_status_not_signed_in)
+                                stringResource(R.string.common_ui_signed_out)
                             },
                         color = if (isLoggedIn) StatusGreen else TextSecondary,
                         fontSize = 12.sp,

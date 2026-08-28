@@ -1303,7 +1303,6 @@ Yüklü konum:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Bulut Eşitleme</string>
-    <string name="google_cloud_sync_started">Bulut eşitleme başladı.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google Hizmetleri</string>
     <string name="google_auto_signin_title">Başlangıçta Google\'da oturum aç</string>
@@ -1390,20 +1389,15 @@ Yüklü konum:
     <string name="cloud_saves_gog_zip_success">GOG bulut kayıtları zip\'i kaydedildi.</string>
     <string name="cloud_saves_gog_zip_failed">GOG bulut kayıtları zip\'i kaydedilemedi.</string>
     <string name="cloud_saves_gog_zip_empty">GOG bulut kaydı dosyası bulunamadı.</string>
-    <string name="cloud_saves_google_backup_label">Google\'a Yedekle</string>
-    <string name="cloud_saves_google_backup_helper">Google Play Games\'e bir kopya kaydet</string>
-    <string name="cloud_saves_google_backup_no_save">Yedeklenecek kayıt dosyası bulunamadı.</string>
     <string name="cloud_saves_history_title">Kayıt Geçmişi</string>
     <string name="cloud_saves_history_empty">Henüz yedeklenmiş önceki kayıt yok. Değiştirilen kayıtlar ve manuel yedekler burada 30 gün boyunca görünür.</string>
     <string name="cloud_saves_history_loading">Kayıt geçmişi yükleniyor…</string>
-    <string name="cloud_saves_history_sign_in">Kayıt geçmişinizi görüntülemek için Google\'da oturum açın.</string>
     <string name="cloud_saves_history_origin_local">yerel</string>
     <string name="cloud_saves_history_origin_cloud">bulut</string>
     <string name="cloud_saves_history_origin_manual">manuel</string>
     <string name="cloud_saves_history_origin_auto">otomatik</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Geri Yükle</string>

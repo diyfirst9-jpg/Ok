@@ -1303,7 +1303,6 @@
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">クラウド同期</string>
-    <string name="google_cloud_sync_started">クラウド同期を開始しました。</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google サービス</string>
     <string name="google_auto_signin_title">起動時に Google にサインイン</string>
@@ -1390,20 +1389,15 @@
     <string name="cloud_saves_gog_zip_success">GOG クラウドセーブの zip を保存しました。</string>
     <string name="cloud_saves_gog_zip_failed">GOG クラウドセーブの zip を保存できませんでした。</string>
     <string name="cloud_saves_gog_zip_empty">GOG クラウドセーブのファイルが見つかりません。</string>
-    <string name="cloud_saves_google_backup_label">Google にバックアップ</string>
-    <string name="cloud_saves_google_backup_helper">Google Play Games にコピーを保存</string>
-    <string name="cloud_saves_google_backup_no_save">バックアップするセーブファイルが見つかりません。</string>
     <string name="cloud_saves_history_title">セーブ履歴</string>
     <string name="cloud_saves_history_empty">まだバックアップされた過去のセーブはありません。置き換えられたセーブと手動バックアップは、ここに 30 日間表示されます。</string>
     <string name="cloud_saves_history_loading">セーブ履歴を読み込み中…</string>
-    <string name="cloud_saves_history_sign_in">Google にサインインしてセーブ履歴を表示してください。</string>
     <string name="cloud_saves_history_origin_local">ローカル</string>
     <string name="cloud_saves_history_origin_cloud">クラウド</string>
     <string name="cloud_saves_history_origin_manual">手動</string>
     <string name="cloud_saves_history_origin_auto">自動</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">復元</string>

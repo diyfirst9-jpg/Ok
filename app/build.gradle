@@ -282,7 +282,6 @@ dependencies {
     implementation 'com.android.ndk.thirdparty:openssl:1.1.1q-beta-1'
     implementation 'com.android.ndk.thirdparty:curl:7.85.0-beta-1'
 
-    implementation libs.playServicesGamesV2
 
     implementation libs.workRuntimeKtx
 

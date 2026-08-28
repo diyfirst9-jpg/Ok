@@ -172,8 +172,7 @@ import com.winlator.cmod.feature.stores.steam.service.SteamService
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.feature.stores.steam.utils.getAvatarURL
 import com.winlator.cmod.feature.sync.CloudSyncHelper
-import com.winlator.cmod.feature.sync.google.CloudSyncManager
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.feature.sync.ui.CloudSavesContent
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.container.Shortcut
@@ -1100,7 +1099,7 @@ internal fun UnifiedActivity.EpicGameManagerDialog(
                     onDismissRequest()
                     com.winlator.cmod.shared.ui.toast.WinToast.show(
                         context,
-                        context.getString(R.string.google_cloud_sync_started),
+                        context.getString(R.string.cloud_saves_sync_started),
                         android.widget.Toast.LENGTH_SHORT,
                     )
                 },
@@ -1714,7 +1713,7 @@ internal fun UnifiedActivity.GOGGameManagerDialog(
                     onDismissRequest()
                     com.winlator.cmod.shared.ui.toast.WinToast.show(
                         context,
-                        context.getString(R.string.google_cloud_sync_started),
+                        context.getString(R.string.cloud_saves_sync_started),
                         android.widget.Toast.LENGTH_SHORT,
                     )
                 },

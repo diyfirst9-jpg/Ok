@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.shared.theme.WinNativeTheme
 import com.winlator.cmod.shared.ui.nav.PaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.bindPaneNav
@@ -66,9 +66,9 @@ object SteamCloudConflictDialog {
                         SteamCloudConflictDialogContent(
                             navRegistry = navRegistry,
                             timestamps = timestamps,
-                            initialKeepBackup = GameSaveBackupManager.isKeepReplacedBackupEnabled(activity),
+                            initialKeepBackup = SaveBackupManager.isKeepReplacedBackupEnabled(activity),
                             onKeepBackupChanged = { enabled ->
-                                GameSaveBackupManager.setKeepReplacedBackupEnabled(activity, enabled)
+                                SaveBackupManager.setKeepReplacedBackupEnabled(activity, enabled)
                             },
                             onUseCloud = { keepBackup ->
                                 dialog.dismiss()

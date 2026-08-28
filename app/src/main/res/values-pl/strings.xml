@@ -1018,7 +1018,6 @@ Zainstalowana ścieżka:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Synchronizacja w chmurze</string>
-    <string name="google_cloud_sync_started">Rozpoczęto synchronizację w chmurze.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Usługi Google</string>
     <string name="google_auto_signin_title">Logowanie do Google przy starcie</string>
@@ -1204,7 +1203,6 @@ Zainstalowana ścieżka:
     <string name="cloud_saves_history_loading">Ładowanie historii zapisów\u2026</string>
     <string name="cloud_saves_history_origin_auto">auto</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">chmura</string>
@@ -1223,7 +1221,6 @@ Zainstalowana ścieżka:
     <string name="cloud_saves_history_restore_confirm_title">Przywrócić tę kopię zapasową?</string>
     <string name="cloud_saves_history_restore_failed">Nie udało się przywrócić tej kopii zapasowej.</string>
     <string name="cloud_saves_history_restore_success">Zapis przywrócony z kopii zapasowej.</string>
-    <string name="cloud_saves_history_sign_in">Zaloguj się do Google, aby wyświetlić historię zapisów.</string>
     <string name="cloud_saves_history_title">Historia zapisów</string>
     <string name="cloud_saves_history_download">Pobierz</string>
     <string name="cloud_saves_history_download_success">Plik pobrany.</string>
@@ -1609,9 +1606,6 @@ Zainstalowana ścieżka:
     <string name="file_manager_delete_failed">Usuwanie nie powiodło się</string>
     <string name="file_manager_rename_failed">Zmiana nazwy nie powiodła się</string>
     <string name="file_manager_create_folder_failed">Tworzenie folderu nie powiodło się</string>
-    <string name="cloud_saves_google_backup_helper">Zapisz kopię w Google Play Games</string>
-    <string name="cloud_saves_google_backup_label">Kopia zapasowa w Google</string>
-    <string name="cloud_saves_google_backup_no_save">Nie znaleziono plików zapisu do utworzenia kopii.</string>
     <string name="cloud_saves_history_cloud_readonly">Tylko do odczytu</string>
     <string name="session_drawer_rail_label_record">Nagrywaj</string>
     <string name="session_record_failed">Nie można rozpocząć nagrywania</string>

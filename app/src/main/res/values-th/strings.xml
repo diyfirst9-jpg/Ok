@@ -1303,7 +1303,6 @@
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">การซิงค์คลาวด์</string>
-    <string name="google_cloud_sync_started">เริ่มการซิงค์คลาวด์แล้ว</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">บริการ Google</string>
     <string name="google_auto_signin_title">ลงชื่อเข้าใช้ Google เมื่อเปิดแอป</string>
@@ -1390,20 +1389,15 @@
     <string name="cloud_saves_gog_zip_success">บันทึก zip เซฟบนคลาวด์ของ GOG แล้ว</string>
     <string name="cloud_saves_gog_zip_failed">ไม่สามารถบันทึก zip เซฟบนคลาวด์ของ GOG ได้</string>
     <string name="cloud_saves_gog_zip_empty">ไม่พบไฟล์เซฟบนคลาวด์ของ GOG</string>
-    <string name="cloud_saves_google_backup_label">สำรองไปยัง Google</string>
-    <string name="cloud_saves_google_backup_helper">บันทึกสำเนาไปยัง Google Play Games</string>
-    <string name="cloud_saves_google_backup_no_save">ไม่พบไฟล์เซฟที่จะสำรอง</string>
     <string name="cloud_saves_history_title">ประวัติเซฟ</string>
     <string name="cloud_saves_history_empty">ยังไม่มีเซฟก่อนหน้าที่สำรองไว้ เซฟที่ถูกแทนที่และการสำรองข้อมูลด้วยตนเองจะปรากฏที่นี่เป็นเวลา 30 วัน</string>
     <string name="cloud_saves_history_loading">กำลังโหลดประวัติเซฟ…</string>
-    <string name="cloud_saves_history_sign_in">ลงชื่อเข้าใช้ Google เพื่อดูประวัติเซฟของคุณ</string>
     <string name="cloud_saves_history_origin_local">ในเครื่อง</string>
     <string name="cloud_saves_history_origin_cloud">คลาวด์</string>
     <string name="cloud_saves_history_origin_manual">ด้วยตนเอง</string>
     <string name="cloud_saves_history_origin_auto">อัตโนมัติ</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">กู้คืน</string>

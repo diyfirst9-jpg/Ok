@@ -1080,7 +1080,6 @@
     <string name="steam_login_code">Код</string>
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Облачная синхронизация</string>
-    <string name="google_cloud_sync_started">Синхронизация с облаком началась.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Сервисы Google</string>
     <string name="google_auto_signin_title">Вход в Google при запуске</string>
@@ -1165,13 +1164,11 @@
     <string name="cloud_saves_history_download_failed">Не удалось скачать.</string>
     <string name="cloud_saves_history_empty">Предыдущие сохранения еще не сохранены. Замененные сохранения и ручные резервные копии будут появляться здесь в течение 30 дней.</string>
     <string name="cloud_saves_history_loading">Загрузка истории сохранений\u2026</string>
-    <string name="cloud_saves_history_sign_in">Войдите в Google, чтобы просмотреть историю сохранений.</string>
     <string name="cloud_saves_history_origin_local">локально</string>
     <string name="cloud_saves_history_origin_cloud">облако</string>
     <string name="cloud_saves_history_origin_manual">вручную</string>
     <string name="cloud_saves_history_origin_auto">авто</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Восстановить</string>
@@ -1509,9 +1506,6 @@
     <string name="file_manager_delete_failed">Не удалось удалить</string>
     <string name="file_manager_rename_failed">Не удалось переименовать</string>
     <string name="file_manager_create_folder_failed">Не удалось создать папку</string>
-    <string name="cloud_saves_google_backup_helper">Сохранить копию в Google Play Games</string>
-    <string name="cloud_saves_google_backup_label">Резервная копия в Google</string>
-    <string name="cloud_saves_google_backup_no_save">Не найдено файлов сохранения для резервного копирования.</string>
     <string name="cloud_saves_history_cloud_readonly">Только чтение</string>
     <string name="session_drawer_rail_label_record">Запись</string>
     <string name="session_record_failed">Не удалось начать запись</string>

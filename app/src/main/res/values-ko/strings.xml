@@ -1012,7 +1012,6 @@
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">클라우드 동기화</string>
-    <string name="google_cloud_sync_started">클라우드 동기화가 시작되었습니다.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google 서비스</string>
     <string name="google_auto_signin_title">실행 시 Google에 로그인</string>
@@ -1199,7 +1198,6 @@
     <string name="cloud_saves_history_loading">저장 기록 불러오는 중\u2026</string>
     <string name="cloud_saves_history_origin_auto">자동</string>
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_origin_cloud">클라우드</string>
@@ -1218,7 +1216,6 @@
     <string name="cloud_saves_history_restore_confirm_title">이 백업을 복원하시겠습니까?</string>
     <string name="cloud_saves_history_restore_failed">이 백업을 복원할 수 없습니다.</string>
     <string name="cloud_saves_history_restore_success">백업에서 저장 파일을 복원했습니다.</string>
-    <string name="cloud_saves_history_sign_in">Google에 로그인하여 저장 기록을 확인하세요.</string>
     <string name="cloud_saves_history_title">저장 기록</string>
     <string name="cloud_saves_history_download">다운로드</string>
     <string name="cloud_saves_history_download_success">파일을 다운로드했습니다.</string>
@@ -1604,9 +1601,6 @@
     <string name="file_manager_delete_failed">삭제에 실패했습니다</string>
     <string name="file_manager_rename_failed">이름 변경에 실패했습니다</string>
     <string name="file_manager_create_folder_failed">폴더 만들기에 실패했습니다</string>
-    <string name="cloud_saves_google_backup_helper">Google Play Games에 복사본 저장</string>
-    <string name="cloud_saves_google_backup_label">Google에 백업</string>
-    <string name="cloud_saves_google_backup_no_save">백업할 저장 파일이 없습니다.</string>
     <string name="cloud_saves_history_cloud_readonly">읽기 전용</string>
     <string name="session_drawer_rail_label_record">녹화</string>
     <string name="session_record_failed">녹화를 시작할 수 없습니다</string>

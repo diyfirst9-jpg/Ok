@@ -1349,7 +1349,6 @@ Installed path:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Cloud Sync</string>
-    <string name="google_cloud_sync_started">Cloud sync started.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google Services</string>
     <string name="google_auto_signin_title">Sign in to Google on launch</string>
@@ -1403,6 +1402,7 @@ Installed path:
     <string name="google_cloud_error_generic">Google cloud sync failed: %1$s</string>
     <string name="google_cloud_error_before_open">Google cloud sync failed before Google Saved Games could open.</string>
     <string name="cloud_saves_title">Cloud Saves</string>
+    <string name="cloud_saves_sync_started">Cloud sync started.</string>
     <string name="cloud_saves_title_for_provider">%1$s Cloud Saves - %2$s</string>
     <string name="cloud_saves_sync_summary">Pull the version %1$s has right now.</string>
     <string name="cloud_saves_sync_summary_generic">Pull the current cloud version.</string>
@@ -1436,20 +1436,15 @@ Installed path:
     <string name="cloud_saves_gog_zip_success">GOG cloud saves zip saved.</string>
     <string name="cloud_saves_gog_zip_failed">Could not save GOG cloud saves zip.</string>
     <string name="cloud_saves_gog_zip_empty">No GOG cloud save files found.</string>
-    <string name="cloud_saves_google_backup_label">Backup To Google</string>
-    <string name="cloud_saves_google_backup_helper">Save a copy to Google Play Games</string>
-    <string name="cloud_saves_google_backup_no_save">No save files found to back up.</string>
     <string name="cloud_saves_history_title">Save History</string>
     <string name="cloud_saves_history_empty">No previous saves backed up yet. Replaced saves and manual backups will appear here for 30 days.</string>
     <string name="cloud_saves_history_loading">Loading save history\u2026</string>
-    <string name="cloud_saves_history_sign_in">Sign in to Google to view your save history.</string>
     <string name="cloud_saves_history_origin_local">local</string>
     <string name="cloud_saves_history_origin_cloud">cloud</string>
     <string name="cloud_saves_history_origin_manual">manual</string>
     <string name="cloud_saves_history_origin_auto">auto</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Restore</string>

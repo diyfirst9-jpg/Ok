@@ -1303,7 +1303,6 @@ Asennuspolku:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Pilvisynkronointi</string>
-    <string name="google_cloud_sync_started">Pilvisynkronointi aloitettu.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Google-palvelut</string>
     <string name="google_auto_signin_title">Kirjaudu Googleen käynnistyksen yhteydessä</string>
@@ -1390,20 +1389,15 @@ Asennuspolku:
     <string name="cloud_saves_gog_zip_success">GOG-pilvitallennusten zip tallennettu.</string>
     <string name="cloud_saves_gog_zip_failed">GOG-pilvitallennusten zipin tallennus epäonnistui.</string>
     <string name="cloud_saves_gog_zip_empty">GOG-pilvitallennustiedostoja ei löytynyt.</string>
-    <string name="cloud_saves_google_backup_label">Varmuuskopioi Googleen</string>
-    <string name="cloud_saves_google_backup_helper">Tallenna kopio Google Play Gamesiin</string>
-    <string name="cloud_saves_google_backup_no_save">Varmuuskopioitavia tallennustiedostoja ei löytynyt.</string>
     <string name="cloud_saves_history_title">Tallennushistoria</string>
     <string name="cloud_saves_history_empty">Aiempia tallennuksia ei ole vielä varmuuskopioitu. Korvatut tallennukset ja manuaaliset varmuuskopiot näkyvät täällä 30 päivän ajan.</string>
     <string name="cloud_saves_history_loading">Ladataan tallennushistoriaa…</string>
-    <string name="cloud_saves_history_sign_in">Kirjaudu Googleen nähdäksesi tallennushistoriasi.</string>
     <string name="cloud_saves_history_origin_local">paikallinen</string>
     <string name="cloud_saves_history_origin_cloud">pilvi</string>
     <string name="cloud_saves_history_origin_manual">manuaalinen</string>
     <string name="cloud_saves_history_origin_auto">automaattinen</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Palauta</string>

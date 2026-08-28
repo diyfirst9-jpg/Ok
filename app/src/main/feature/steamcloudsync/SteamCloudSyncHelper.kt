@@ -9,7 +9,7 @@ import com.winlator.cmod.feature.stores.steam.service.SteamService
 import com.winlator.cmod.feature.stores.steam.utils.ContainerUtils
 import com.winlator.cmod.feature.stores.steam.utils.FileUtils
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.container.Shortcut
@@ -88,7 +88,7 @@ object SteamCloudSyncHelper {
                         SteamSaveSnapshotManager.recordSnapshot(
                             context,
                             appId,
-                            GameSaveBackupManager.BackupOrigin.AUTO,
+                            SaveBackupManager.BackupOrigin.AUTO,
                             containerHint,
                         )
                     }.onFailure { Timber.w(it, "Pre-download snapshot failed for appId=%d", appId) }
@@ -411,7 +411,7 @@ object SteamCloudSyncHelper {
                             SteamSaveSnapshotManager.recordSnapshot(
                                 context,
                                 appId,
-                                GameSaveBackupManager.BackupOrigin.LOCAL,
+                                SaveBackupManager.BackupOrigin.LOCAL,
                                 containerHint,
                             )
                         }.onFailure { Timber.w(it, "Snapshot after Use-Local upload failed for appId=%d", appId) }

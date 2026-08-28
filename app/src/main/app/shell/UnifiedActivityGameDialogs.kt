@@ -178,8 +178,7 @@ import com.winlator.cmod.feature.stores.steam.service.SteamService
 import com.winlator.cmod.feature.stores.steam.utils.PrefManager
 import com.winlator.cmod.feature.stores.steam.utils.getAvatarURL
 import com.winlator.cmod.feature.sync.CloudSyncHelper
-import com.winlator.cmod.feature.sync.google.CloudSyncManager
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.feature.sync.ui.CloudSavesContent
 import com.winlator.cmod.runtime.container.ContainerManager
 import com.winlator.cmod.runtime.container.Shortcut
@@ -1227,21 +1226,21 @@ internal fun UnifiedActivity.GameSettingsDialog(
 
                 val gameSource =
                     when {
-                        isEpic -> GameSaveBackupManager.GameSource.EPIC
-                        isCustom -> GameSaveBackupManager.GameSource.CUSTOM
-                        else -> GameSaveBackupManager.GameSource.STEAM
+                        isEpic -> SaveBackupManager.GameSource.EPIC
+                        isCustom -> SaveBackupManager.GameSource.CUSTOM
+                        else -> SaveBackupManager.GameSource.STEAM
                     }
                 val gameIdStr =
                     when {
                         isEpic -> epicId.toString()
-                        isCustom -> shortcut?.let { GameSaveBackupManager.customGameId(it) } ?: app.name
+                        isCustom -> shortcut?.let { SaveBackupManager.customGameId(it) } ?: app.name
                         else -> app.id.toString()
                     }
                 val providerLabel =
                     when (gameSource) {
-                        GameSaveBackupManager.GameSource.EPIC ->
+                        SaveBackupManager.GameSource.EPIC ->
                             stringResource(R.string.preloader_platform_epic)
-                        GameSaveBackupManager.GameSource.CUSTOM ->
+                        SaveBackupManager.GameSource.CUSTOM ->
                             stringResource(R.string.preloader_platform_custom)
                         else ->
                             stringResource(R.string.preloader_platform_steam)
@@ -1256,7 +1255,7 @@ internal fun UnifiedActivity.GameSettingsDialog(
                     gameId = gameIdStr,
                     gameName = app.name,
                     shortcut = shortcut,
-                    retroSaveDir = com.winlator.cmod.feature.sync.google.GameSaveBackupManager.retroSaveDir(context, shortcut, gameIdStr),
+                    retroSaveDir = com.winlator.cmod.feature.sync.SaveBackupManager.retroSaveDir(context, shortcut, gameIdStr),
                     onCloudSyncToggle = { enabled ->
                         cloudSyncEnabled = enabled
                         setShortcutCloudSyncEnabled(shortcut, enabled)
@@ -1557,7 +1556,7 @@ internal fun UnifiedActivity.GOGGameSettingsDialog(
                     isWorking = isWorking,
                     cloudSyncEnabled = cloudSyncEnabled,
                     offlineModeEnabled = offlineModeEnabled,
-                    gameSource = GameSaveBackupManager.GameSource.GOG,
+                    gameSource = SaveBackupManager.GameSource.GOG,
                     gameId = app.id,
                     gameName = app.title,
                     shortcut = shortcut,
@@ -1585,7 +1584,7 @@ internal fun UnifiedActivity.GOGGameSettingsDialog(
                                 val ok =
                                     CloudSyncHelper.downloadCloudSaves(
                                         context,
-                                        GameSaveBackupManager.GameSource.GOG,
+                                        SaveBackupManager.GameSource.GOG,
                                         app.id,
                                         shortcut,
                                     )
@@ -2601,9 +2600,9 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
 
                             val detailGameSource =
                                 when {
-                                    isGog -> GameSaveBackupManager.GameSource.GOG
-                                    isEpic -> GameSaveBackupManager.GameSource.EPIC
-                                    else -> GameSaveBackupManager.GameSource.STEAM
+                                    isGog -> SaveBackupManager.GameSource.GOG
+                                    isEpic -> SaveBackupManager.GameSource.EPIC
+                                    else -> SaveBackupManager.GameSource.STEAM
                                 }
                             val detailGameId =
                                 when {
@@ -2635,13 +2634,13 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
 
                             val detailProviderLabel =
                                 when (detailGameSource) {
-                                    GameSaveBackupManager.GameSource.GOG ->
+                                    SaveBackupManager.GameSource.GOG ->
                                         stringResource(R.string.preloader_platform_gog)
-                                    GameSaveBackupManager.GameSource.EPIC ->
+                                    SaveBackupManager.GameSource.EPIC ->
                                         stringResource(R.string.preloader_platform_epic)
-                                    GameSaveBackupManager.GameSource.CUSTOM ->
+                                    SaveBackupManager.GameSource.CUSTOM ->
                                         stringResource(R.string.preloader_platform_custom)
-                                    GameSaveBackupManager.GameSource.STEAM ->
+                                    SaveBackupManager.GameSource.STEAM ->
                                         stringResource(R.string.preloader_platform_steam)
                                 }
 
@@ -2654,7 +2653,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                 gameId = detailGameId,
                                 gameName = app.name,
                                 shortcut = detailShortcut,
-                                retroSaveDir = com.winlator.cmod.feature.sync.google.GameSaveBackupManager.retroSaveDir(context, detailShortcut, detailGameId),
+                                retroSaveDir = com.winlator.cmod.feature.sync.SaveBackupManager.retroSaveDir(context, detailShortcut, detailGameId),
                                 onCloudSyncToggle = { enabled ->
                                     cloudSyncEnabled = enabled
                                     setShortcutCloudSyncEnabled(detailShortcut, enabled)
@@ -2791,10 +2790,10 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
 
                                 val detailGameSource =
                                     when {
-                                        isGog -> GameSaveBackupManager.GameSource.GOG
-                                        isEpic -> GameSaveBackupManager.GameSource.EPIC
-                                        isCustom -> GameSaveBackupManager.GameSource.CUSTOM
-                                        else -> GameSaveBackupManager.GameSource.STEAM
+                                        isGog -> SaveBackupManager.GameSource.GOG
+                                        isEpic -> SaveBackupManager.GameSource.EPIC
+                                        isCustom -> SaveBackupManager.GameSource.CUSTOM
+                                        else -> SaveBackupManager.GameSource.STEAM
                                     }
                                 val detailShortcut =
                                     remember(app.id, gogGame?.id, epicId, isGog, isEpic, isCustom) {
@@ -2816,7 +2815,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                         isGog -> gogGame!!.id
                                         isEpic -> epicId.toString()
                                         isCustom ->
-                                            detailShortcut?.let { GameSaveBackupManager.customGameId(it) }
+                                            detailShortcut?.let { SaveBackupManager.customGameId(it) }
                                                 ?: app.name
                                         else -> app.id.toString()
                                     }
@@ -2829,13 +2828,13 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
 
                                 val detailProviderLabel =
                                     when (detailGameSource) {
-                                        GameSaveBackupManager.GameSource.GOG ->
+                                        SaveBackupManager.GameSource.GOG ->
                                             stringResource(R.string.preloader_platform_gog)
-                                        GameSaveBackupManager.GameSource.EPIC ->
+                                        SaveBackupManager.GameSource.EPIC ->
                                             stringResource(R.string.preloader_platform_epic)
-                                        GameSaveBackupManager.GameSource.CUSTOM ->
+                                        SaveBackupManager.GameSource.CUSTOM ->
                                             stringResource(R.string.preloader_platform_custom)
-                                        GameSaveBackupManager.GameSource.STEAM ->
+                                        SaveBackupManager.GameSource.STEAM ->
                                             stringResource(R.string.preloader_platform_steam)
                                     }
 
@@ -2848,7 +2847,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                     gameId = detailGameId,
                                     gameName = app.name,
                                     shortcut = detailShortcut,
-                                    retroSaveDir = com.winlator.cmod.feature.sync.google.GameSaveBackupManager.retroSaveDir(context, detailShortcut, detailGameId),
+                                    retroSaveDir = com.winlator.cmod.feature.sync.SaveBackupManager.retroSaveDir(context, detailShortcut, detailGameId),
                                     onCloudSyncToggle = { enabled ->
                                         cloudSyncEnabled = enabled
                                         setShortcutCloudSyncEnabled(detailShortcut, enabled)

@@ -1,10 +1,10 @@
 package com.winlator.cmod.feature.stores.epic.service
 
 import android.content.Context
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupHistoryEntry
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupOrigin
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupResult
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager.BackupStorage
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupHistoryEntry
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupOrigin
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupResult
+import com.winlator.cmod.feature.sync.SaveBackupManager.BackupStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber

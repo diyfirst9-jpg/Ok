@@ -3,7 +3,7 @@ package com.winlator.cmod.feature.steamcloudsync
 import android.app.Activity
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.stores.steam.service.SteamService
-import com.winlator.cmod.feature.sync.google.GameSaveBackupManager
+import com.winlator.cmod.feature.sync.SaveBackupManager
 import com.winlator.cmod.runtime.container.Container
 import com.winlator.cmod.runtime.container.Shortcut
 import kotlinx.coroutines.CoroutineScope
@@ -79,7 +79,7 @@ object SteamExitCloudSync {
                                     SteamSaveSnapshotManager.recordSnapshot(
                                         activity.applicationContext,
                                         appId,
-                                        GameSaveBackupManager.BackupOrigin.AUTO,
+                                        SaveBackupManager.BackupOrigin.AUTO,
                                         syncContainer,
                                     )
                                 }.onFailure {

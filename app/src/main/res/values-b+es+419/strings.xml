@@ -1303,7 +1303,6 @@ Ruta instalada:
 
     <!-- Google > Cloud Sync -->
     <string name="google_cloud_title">Sincronización en la nube</string>
-    <string name="google_cloud_sync_started">Sincronización en la nube iniciada.</string>
     <string name="google_cloud_google">Google</string>
     <string name="google_cloud_services">Servicios de Google</string>
     <string name="google_auto_signin_title">Iniciar sesión en Google al arrancar</string>
@@ -1390,20 +1389,15 @@ Ruta instalada:
     <string name="cloud_saves_gog_zip_success">Zip de guardados en la nube de GOG guardado.</string>
     <string name="cloud_saves_gog_zip_failed">No se pudo guardar el zip de guardados en la nube de GOG.</string>
     <string name="cloud_saves_gog_zip_empty">No se encontraron archivos de guardado en la nube de GOG.</string>
-    <string name="cloud_saves_google_backup_label">Respaldar en Google</string>
-    <string name="cloud_saves_google_backup_helper">Guardar una copia en Google Play Games</string>
-    <string name="cloud_saves_google_backup_no_save">No se encontraron archivos de guardado para respaldar.</string>
     <string name="cloud_saves_history_title">Historial de guardados</string>
     <string name="cloud_saves_history_empty">Aún no hay guardados anteriores respaldados. Los guardados reemplazados y los respaldos manuales aparecerán aquí durante 30 días.</string>
     <string name="cloud_saves_history_loading">Cargando historial de guardados…</string>
-    <string name="cloud_saves_history_sign_in">Inicia sesión en Google para ver tu historial de guardados.</string>
     <string name="cloud_saves_history_origin_local">local</string>
     <string name="cloud_saves_history_origin_cloud">nube</string>
     <string name="cloud_saves_history_origin_manual">manual</string>
     <string name="cloud_saves_history_origin_auto">automático</string>
     <!-- Save History badge: where the backup is stored. -->
     <string name="cloud_saves_history_storage_steam">Steam</string>
-    <string name="cloud_saves_history_storage_google">Google</string>
     <string name="cloud_saves_history_storage_epic">Epic</string>
     <string name="cloud_saves_history_storage_gog">GOG</string>
     <string name="cloud_saves_history_restore">Restaurar</string>

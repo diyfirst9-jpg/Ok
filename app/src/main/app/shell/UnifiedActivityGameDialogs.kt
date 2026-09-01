@@ -1754,66 +1754,84 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
         val androidLastPlayed = androidPrefs.getLong("${app.id}_last_played", 0L)
 
         val androidHero = androidIconPath?.let { java.io.File(it) }
-        LibraryGameLaunchScreen(
-            appName = app.name,
-            subtitle = "Android App • $androidPackage",
-            sourceLabel = "Android",
-            heroImageUrl = androidHero,
-            customHeroImageCacheKey = androidIconPath?.let { "android_library_hero:$it" },
-            releaseDateEpochSeconds = 0L,
-            totalPlaytimeMillis = androidPlaytime,
-            playCount = androidPlayCount,
-            lastPlayedMillis = androidLastPlayed,
-            installSizeText = null,
-            isCustom = false,
-            isRetro = false,
-            showBootToDesktop = false,
-            showSaveTransfer = false,
-            hasPinnedShortcut = false,
-            steamMenuEnabled = false,
-            areSteamActionsEnabled = false,
-            showVerifyFiles = false,
-            showCheckForUpdate = false,
-            showWorkshop = false,
-            playEnabled = true,
-            altEngineLabel = null,
-            altEngineEnabled = false,
-            onAltEngineChange = null,
-            onBack = onDismissRequest,
-            onPlay = {
-                AndroidLibraryPlaySessionTracker.begin(context, app)
-                runCatching {
-                    if (!launchAndroidLibraryApp(context, app)) {
-                        throw IllegalStateException("Launch intent unavailable")
-                    }
-                    onDismissRequest()
-                }.onFailure {
-                    AndroidLibraryPlaySessionTracker.finish(context)
-                    com.winlator.cmod.shared.ui.toast.WinToast.show(
-                        context,
-                        "Could not open ${app.name}",
-                        android.widget.Toast.LENGTH_SHORT,
-                    )
-                }
-            },
-            onSettings = {
-                runCatching {
-                    context.startActivity(
-                        Intent(
-                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.parse("package:$androidPackage"),
-                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                    )
-                }
-            },
-            onBootToDesktop = {},
-            onAchievements = null,
-            onCheats = null,
-            onShortcut = {},
-            onCloudSaves = {},
-            onSaveTransfer = null,
-            onUninstall = {},
-        )
+        // Use the exact same full-screen Dialog + Surface wrapper as the PC-game path
+        // below, so the Android-app detail page fills the entire screen instead of
+        // being laid out inline (which left an empty gap around it).
+        Dialog(
+            onDismissRequest = onDismissRequest,
+            properties =
+                DialogProperties(
+                    usePlatformDefaultWidth = false,
+                    decorFitsSystemWindows = false,
+                ),
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                shape = RectangleShape,
+                color = Color.Black,
+            ) {
+                LibraryGameLaunchScreen(
+                    appName = app.name,
+                    subtitle = "Android App • $androidPackage",
+                    sourceLabel = "Android",
+                    heroImageUrl = androidHero,
+                    customHeroImageCacheKey = androidIconPath?.let { "android_library_hero:$it" },
+                    releaseDateEpochSeconds = 0L,
+                    totalPlaytimeMillis = androidPlaytime,
+                    playCount = androidPlayCount,
+                    lastPlayedMillis = androidLastPlayed,
+                    installSizeText = null,
+                    isCustom = false,
+                    isRetro = false,
+                    showBootToDesktop = false,
+                    showSaveTransfer = false,
+                    hasPinnedShortcut = false,
+                    steamMenuEnabled = false,
+                    areSteamActionsEnabled = false,
+                    showVerifyFiles = false,
+                    showCheckForUpdate = false,
+                    showWorkshop = false,
+                    playEnabled = true,
+                    altEngineLabel = null,
+                    altEngineEnabled = false,
+                    onAltEngineChange = null,
+                    onBack = onDismissRequest,
+                    onPlay = {
+                        AndroidLibraryPlaySessionTracker.begin(context, app)
+                        runCatching {
+                            if (!launchAndroidLibraryApp(context, app)) {
+                                throw IllegalStateException("Launch intent unavailable")
+                            }
+                            onDismissRequest()
+                        }.onFailure {
+                            AndroidLibraryPlaySessionTracker.finish(context)
+                            com.winlator.cmod.shared.ui.toast.WinToast.show(
+                                context,
+                                "Could not open ${app.name}",
+                                android.widget.Toast.LENGTH_SHORT,
+                            )
+                        }
+                    },
+                    onSettings = {
+                        runCatching {
+                            context.startActivity(
+                                Intent(
+                                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                    Uri.parse("package:$androidPackage"),
+                                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                            )
+                        }
+                    },
+                    onBootToDesktop = {},
+                    onAchievements = null,
+                    onCheats = null,
+                    onShortcut = {},
+                    onCloudSaves = {},
+                    onSaveTransfer = null,
+                    onUninstall = {},
+                )
+            }
+        }
         return
     }
 

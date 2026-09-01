@@ -2346,7 +2346,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                                             }
                                         }
                                     }
-                                    itemsIndexed(tabProfiles) { i, spec ->
+                                    itemsIndexed(tabProfiles, key = { _, spec -> spec.remoteUrl }) { i, spec ->
                                         val installed = spec.verName in advancedInstalledSet
                                         val navHere = controller && region == REGION_CONTENT && navIdx == i + installAllSlots
                                         AdvancedComponentCard(
@@ -2464,7 +2464,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                             .padding(6.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    itemsIndexed(tabs) { i, tab -> TabItem(tab, i, fillWidth = true, fontSize = 13.sp) }
+                    itemsIndexed(tabs, key = { _, tab -> tab.key }) { i, tab -> TabItem(tab, i, fillWidth = true, fontSize = 13.sp) }
                 }
 
                 ContentPanel(

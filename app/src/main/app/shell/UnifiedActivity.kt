@@ -396,8 +396,6 @@ class UnifiedActivity :
     var libraryItemCount: Int = 0
     internal var currentLibraryLayoutMode: LibraryLayoutMode = LibraryLayoutMode.GRID_4
 
-    // Coil model for the focused game's immersive background.
-    val immersiveBackgroundRef = kotlinx.coroutines.flow.MutableStateFlow<Any?>(null)
 
     private val defaultNavigationBarColor: Int = android.graphics.Color.TRANSPARENT
 

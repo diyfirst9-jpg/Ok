@@ -313,12 +313,8 @@ internal fun UnifiedActivity.DrawerContent(
     scope: kotlinx.coroutines.CoroutineScope,
     storeVisible: SnapshotStateMap<String, Boolean>,
     contentFilters: SnapshotStateMap<String, Boolean>,
-    immersiveMode: Boolean,
-    immersiveBlur: Boolean,
     onStoreVisibleChanged: (String, Boolean) -> Unit,
     onContentFiltersChanged: (String, Boolean) -> Unit,
-    onImmersiveModeChanged: (Boolean) -> Unit,
-    onImmersiveBlurChanged: (Boolean) -> Unit,
     onExportAll: () -> Unit,
     onExitApp: () -> Unit,
 ) {
@@ -357,25 +353,6 @@ internal fun UnifiedActivity.DrawerContent(
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             Spacer(Modifier.height(8.dp))
-
-            DrawerSwitchCard(
-                label = stringResource(R.string.library_games_immersive_mode),
-                description = stringResource(R.string.library_games_immersive_mode_description),
-                checked = immersiveMode,
-                onCheckedChange = onImmersiveModeChanged,
-            )
-
-            if (immersiveMode) {
-                Column {
-                    Spacer(Modifier.height(8.dp))
-                    DrawerSwitchCard(
-                        label = stringResource(R.string.library_games_immersive_blur),
-                        description = stringResource(R.string.library_games_immersive_blur_description),
-                        checked = immersiveBlur,
-                        onCheckedChange = onImmersiveBlurChanged,
-                    )
-                }
-            }
 
             Spacer(Modifier.height(12.dp))
             DrawerActionCard(

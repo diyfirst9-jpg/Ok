@@ -936,7 +936,7 @@ private fun ColumnScope.ChannelGrid(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        itemsIndexed(options) { index, channel ->
+        itemsIndexed(options, key = { _, channel -> channel }) { index, channel ->
             SelectableChannelChip(
                 label = channel,
                 isSelected = channel in selected,

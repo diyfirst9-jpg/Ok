@@ -129,9 +129,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import coil.compose.AsyncImage
-import coil.imageLoader
-import coil.request.ImageRequest
 import com.winlator.cmod.BuildConfig
 import com.winlator.cmod.R
 import com.winlator.cmod.app.PluviaApp
@@ -287,8 +284,6 @@ internal fun UnifiedActivity.UnifiedHub() {
     // No user-selectable library layout. The library always uses the adaptive
     // Nintendo-landscape / Windows-Phone-portrait presentation.
     val libraryLayoutMode = LibraryLayoutMode.CONSOLE_TILE
-    var immersiveMode by remember { mutableStateOf(PrefManager.libraryImmersiveMode) }
-    var immersiveBlur by remember { mutableStateOf(PrefManager.libraryImmersiveBlur) }
     val tabs = remember(storeVisible.toMap()) { buildTabs(storeVisible) }
     var selectedIdx by rememberSaveable { mutableIntStateOf(0) }
     var selectedDownloadId by remember { mutableStateOf<String?>(null) }
@@ -666,8 +661,6 @@ internal fun UnifiedActivity.UnifiedHub() {
                 scope = scope,
                 storeVisible = storeVisible,
                 contentFilters = contentFilters,
-                immersiveMode = immersiveMode,
-                immersiveBlur = immersiveBlur,
                 onStoreVisibleChanged = { key, value ->
                     storeVisible[key] = value
                     PrefManager.libraryStoreVisible = storeVisible.entries.filter { it.value }.joinToString(",") { it.key }
@@ -675,14 +668,6 @@ internal fun UnifiedActivity.UnifiedHub() {
                 onContentFiltersChanged = { key, value ->
                     contentFilters[key] = value
                     PrefManager.libraryContentFilters = contentFilters.entries.filter { it.value }.joinToString(",") { it.key }
-                },
-                onImmersiveModeChanged = {
-                    immersiveMode = it
-                    PrefManager.libraryImmersiveMode = it
-                },
-                onImmersiveBlurChanged = {
-                    immersiveBlur = it
-                    PrefManager.libraryImmersiveBlur = it
                 },
                 onExportAll = {
                     scope.launch {
@@ -719,52 +704,13 @@ internal fun UnifiedActivity.UnifiedHub() {
                 )
                 .windowInsetsPadding(horizontalNavigationInsets),
         ) {
-            val currentTabKeyForImmersive = tabs.getOrNull(selectedIdx)?.key ?: "library"
-            val immersiveActive = immersiveMode && currentTabKeyForImmersive == "library"
             // Keep Android system bars visible so the real status bar (time, battery,
-            // signal) is always available. The immersive background can still be used,
-            // but it must never hide the system status bar.
-            DisposableEffect(immersiveActive) {
+            // signal) is always available.
+            DisposableEffect(Unit) {
                 applyImmersiveSystemBars(false)
                 onDispose { applyImmersiveSystemBars(false) }
             }
-            if (immersiveMode && currentTabKeyForImmersive == "library") {
-                val immersiveModel by immersiveBackgroundRef.collectAsState()
-                val immersiveRequest =
-                    remember(immersiveModel, immersiveBlur, context) {
-                        val builder = ImageRequest.Builder(context).data(immersiveModel)
-                        (immersiveModel as? java.io.File)?.takeIf { it.isFile }?.let { file ->
-                            // Custom uploads can be overwritten in place.
-                            val key = "library_immersive_bg:${file.absolutePath}:${file.lastModified()}"
-                            builder.memoryCacheKey(if (immersiveBlur) "$key:blur" else key).diskCacheKey(key)
-                        }
-                        if (immersiveBlur) {
-                            // Blur baked into the bitmap at decode (quarter-res + radius 2 ≈ 8px on screen), so drawing costs the same as a plain image.
-                            val dm = context.resources.displayMetrics
-                            builder
-                                .size(dm.widthPixels / 4, dm.heightPixels / 4)
-                                .scale(coil.size.Scale.FILL)
-                                .transformations(BoxBlurTransformation(radius = 2))
-                        }
-                        builder.crossfade(false).build()
-                    }
-                if (immersiveModel != null) {
-                    Box(Modifier.matchParentSize()) {
-                        AsyncImage(
-                            model = immersiveRequest,
-                            contentDescription = null,
-                            modifier = Modifier.matchParentSize(),
-                            contentScale = ContentScale.Crop,
-                        )
-                        Box(
-                            Modifier
-                                .matchParentSize()
-                                .background(BgDark.copy(alpha = 0.5f)),
-                        )
-                    }
-                }
-            }
-            val scaffoldContainer = if (immersiveMode && currentTabKeyForImmersive == "library") Color.Transparent else BgDark
+            val scaffoldContainer = BgDark
             val openFileManager: () -> Unit = {
                 val internalPath = android.os.Environment.getExternalStorageDirectory().absolutePath
                 val managedRoots = driveRoots(includeInternal = true)
@@ -853,7 +799,7 @@ internal fun UnifiedActivity.UnifiedHub() {
                 }
 
                 val key = tabs.getOrNull(selectedIdx)?.key ?: "library"
-                val innerBoxBg = if (immersiveMode && key == "library") Color.Transparent else BgDark
+                val innerBoxBg = BgDark
 
                 Box(Modifier.padding(padding).fillMaxSize().background(innerBoxBg)) {
 
@@ -2395,68 +2341,6 @@ internal fun UnifiedActivity.LibraryCarousel(
         }
     }
 
-    // Publish the focused game's hero art (custom card > store hero > grid capsule) for the immersive background; shortcuts load once per refresh signal, not per focus move.
-    var immersiveShortcuts by remember { mutableStateOf<List<Shortcut>?>(null) }
-    LaunchedEffect(shortcutRefreshKey, libraryRefreshKey, artworkCacheRefreshKey) {
-        immersiveShortcuts =
-            withContext(Dispatchers.IO) { ContainerManager(context).loadShortcuts() }
-    }
-
-    LaunchedEffect(focusIndex, displayedApps, immersiveShortcuts) {
-        val shortcuts = immersiveShortcuts ?: return@LaunchedEffect
-        val app = displayedApps.getOrNull(focusIndex) ?: displayedApps.firstOrNull()
-        if (app == null) {
-            activity?.immersiveBackgroundRef?.value = null
-            return@LaunchedEffect
-        }
-        // Debounce so scrubbing the grid doesn't decode every intermediate hero.
-        delay(200)
-        val gogGame = visibleGogByPseudoId[app.id]
-        val epicGame = visibleEpicByPseudoId[app.id]
-        val isCustom = app.id < 0
-        val isEpic = app.id >= 2000000000
-        val epicId = if (isEpic) app.id - 2000000000 else 0
-
-        if (isAndroidLibraryApp(app)) {
-            val prefs = context.getSharedPreferences("android_library_apps", android.content.Context.MODE_PRIVATE)
-            val iconPath = prefs.getString("${app.id}_icon", "").orEmpty()
-            activity?.immersiveBackgroundRef?.value = iconPath.takeIf { it.isNotBlank() && java.io.File(it).isFile }?.let { java.io.File(it) }
-            return@LaunchedEffect
-        }
-
-        val shortcut =
-            when {
-                gogGame != null ->
-                    shortcuts.find {
-                        it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == gogGame.id
-                    }
-                else -> findShortcutForGame(shortcuts, app, isCustom, isEpic, epicId)
-            }
-        val customHeroFile =
-            withContext(Dispatchers.IO) {
-                shortcut
-                    ?.getExtra(LibraryShortcutArtwork.LibraryArtworkSlot.GAME_CARD.extraKey)
-                    ?.takeIf { it.isNotBlank() }
-                    ?.let { java.io.File(it) }
-                    ?.takeIf { it.isFile }
-            }
-
-        activity?.immersiveBackgroundRef?.value =
-            customHeroFile
-                ?: run {
-                    val ref =
-                        StoreArtworkCache.heroRef(app, gogGame, epicGame)
-                            ?: StoreArtworkCache.primaryRef(
-                                app,
-                                gogGame,
-                                epicGame,
-                                useLibraryCapsule = false,
-                                listMode = false,
-                            )
-                    StoreArtworkCache.imageModel(context, ref)
-                }
-    }
-
     val openSettingsForApp: (Int, SteamApp) -> Unit = { index, app ->
         activity?.libraryFocusIndex?.value = index
         selectedSteamAppId = app.id
@@ -2511,7 +2395,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                         customListPath = visibleCustomListPathByAppId[app.id],
                         customHeroPath = visibleCustomHeroPathByAppId[app.id],
                         onClick = {
-                            // Keeps the immersive background on the opened game after backing out.
+                            // Preserve focus position for when the user backs out of the detail screen.
                             activity?.libraryFocusIndex?.value = index
                             detailGogGame = visibleGogByPseudoId[app.id]
                             detailApp = app
@@ -2544,6 +2428,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                                 modifier = Modifier.tabScreenPadding(top = TabCarouselTopPadding, bottom = TabCarouselBottomPadding),
                                 listState = carouselState,
                                 selectedIndex = focusIndex,
+                                keyOf = { app -> app.id },
                                 onCenteredIndexChanged = { centeredIndex ->
                                     if (activity != null && activity.libraryFocusIndex.value != centeredIndex) {
                                         activity.libraryFocusIndex.value = centeredIndex
@@ -2662,7 +2547,7 @@ internal fun UnifiedActivity.LibraryCarousel(
                         customListPath = visibleCustomListPathByAppId[app.id],
                         customHeroPath = visibleCustomHeroPathByAppId[app.id],
                         onClick = {
-                            // Keeps the immersive background on the opened game after backing out.
+                            // Preserve focus position for when the user backs out of the detail screen.
                             activity?.libraryFocusIndex?.value = index
                             detailGogGame = visibleGogByPseudoId[app.id]
                             detailApp = app

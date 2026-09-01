@@ -43,6 +43,9 @@ import kotlin.math.abs
  * @param selectedIndex Currently focused item index (drives scroll position).
  * @param onCenteredIndexChanged Called when the visually centered item changes after scroll settles.
  * @param itemContent Composable for each item; receives item, index, selection state, base card width, and base card height.
+ * @param keyOf Optional stable key extractor. Without it Compose keys rows by position, so
+ *   scroll position, animation state, and image decode state get reset/reshuffled whenever the
+ *   list is filtered, reordered, or partially updated (e.g. a new download finishing).
  */
 @Composable
 fun <T> CarouselView(
@@ -51,6 +54,7 @@ fun <T> CarouselView(
     listState: LazyListState = rememberLazyListState(),
     selectedIndex: Int = 0,
     onCenteredIndexChanged: (Int) -> Unit = {},
+    keyOf: ((T) -> Any)? = null,
     itemContent: @Composable (item: T, index: Int, isSelected: Boolean, cardWidth: Dp, cardHeight: Dp) -> Unit,
 ) {
     val lastReportedIndex = remember { mutableIntStateOf(selectedIndex) }
@@ -135,7 +139,10 @@ fun <T> CarouselView(
             flingBehavior = flingBehavior,
             modifier = Modifier.fillMaxSize(),
         ) {
-            itemsIndexed(items) { index, item ->
+            itemsIndexed(
+                items = items,
+                key = if (keyOf != null) { _, item -> keyOf(item) } else null,
+            ) { index, item ->
                 // Compute distance from viewport center as a 0..1 fraction
                 val distanceFraction by remember {
                     derivedStateOf {

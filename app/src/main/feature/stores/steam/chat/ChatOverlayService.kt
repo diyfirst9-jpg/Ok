@@ -856,7 +856,10 @@ class ChatOverlayService : Service() {
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(vertical = 8.dp),
             ) {
-                items(messages.size) { i -> OverlayMessageBubble(messages[i]) }
+                items(
+                    count = messages.size,
+                    key = { i -> messages[i].let { "${it.timestamp}:${it.ordinal}:${it.fromSelf}" } },
+                ) { i -> OverlayMessageBubble(messages[i]) }
             }
             Row(
                 Modifier.fillMaxWidth().background(SurfaceDark).padding(horizontal = 8.dp, vertical = 6.dp),

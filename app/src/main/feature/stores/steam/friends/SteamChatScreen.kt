@@ -285,7 +285,7 @@ fun SteamChatScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
                                 item { Spacer(Modifier.height(8.dp)) }
-                                items(messages) { msg -> MessageBubble(msg) }
+                                items(messages, key = { msg -> "${msg.timestamp}:${msg.ordinal}:${msg.fromSelf}" }) { msg -> MessageBubble(msg) }
                                 item { Spacer(Modifier.height(8.dp)) }
                             }
                         }

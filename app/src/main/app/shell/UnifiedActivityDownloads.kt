@@ -1027,13 +1027,22 @@ internal fun UnifiedActivity.DownloadItemDeck(
                 ),
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Decode at the actual on-screen target size (120x68dp) instead of full
+            // resolution, so the header art doesn't blow up GPU/RAM on this list.
+            val density = androidx.compose.ui.platform.LocalDensity.current
+            val thumbWidthPx = with(density) { 120.dp.roundToPx() }
+            val thumbHeightPx = with(density) { 68.dp.roundToPx() }
             AsyncImage(
                 model =
-                    ImageRequest
-                        .Builder(context)
-                        .data(displayImage)
-                        .crossfade(false)
-                        .build(),
+                    remember(displayImage) {
+                        ImageRequest
+                            .Builder(context)
+                            .data(displayImage)
+                            .size(thumbWidthPx, thumbHeightPx)
+                            .scale(coil.size.Scale.FILL)
+                            .crossfade(false)
+                            .build()
+                    },
                 contentDescription = null,
                 modifier = Modifier.size(120.dp, 68.dp).clip(RoundedCornerShape(4.dp)),
                 contentScale = ContentScale.Crop,

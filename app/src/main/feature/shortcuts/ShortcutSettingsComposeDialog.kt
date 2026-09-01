@@ -504,6 +504,9 @@ class ShortcutSettingsComposeDialog private constructor(
         val savedFpsLimit = shortcut.getExtra("fpsLimit", "0")
         state.fpsLimit.intValue = savedFpsLimit.toIntOrNull() ?: 0
 
+        // Power Save Mode (adaptive frame-time based present-mode/fps throttling)
+        state.adaptivePowerSaveEnabled.value = shortcut.getExtra("powerSaveMode", "0") == "1"
+
         // SGSR 1 per-game shortcut settings
         state.sgsrEnabled.value = shortcut.getExtra("sgsrEnabled", "0") == "1"
         state.sgsrUpscaleMode.intValue =
@@ -1284,6 +1287,9 @@ class ShortcutSettingsComposeDialog private constructor(
             // FPS Limit
             val fpsLimit = state.fpsLimit.intValue
             shortcut.putExtra("fpsLimit", if (fpsLimit > 0) fpsLimit.toString() else null)
+
+            // Power Save Mode
+            shortcut.putExtra("powerSaveMode", if (state.adaptivePowerSaveEnabled.value) "1" else null)
 
             // SGSR 1 is a shortcut-only setting, not a container override.
             if (state.sgsrEnabled.value) {

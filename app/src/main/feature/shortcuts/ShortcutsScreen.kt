@@ -267,13 +267,6 @@ private fun ShortcutRow(
                         listener.onCloneShortcut(shortcut)
                     },
                 )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.common_ui_properties), color = WinNativeTextPrimary) },
-                    onClick = {
-                        menuExpanded = false
-                        listener.onShowProperties(shortcut)
-                    },
-                )
             }
         }
     }

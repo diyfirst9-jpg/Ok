@@ -1205,34 +1205,42 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         lifecycleScope.launch {
             val profiles =
                 withContext(Dispatchers.IO) {
-                    // 1. Fetch recommended (default.json)
-                    val recommended = fetchRecommendedPackages()
+                    runCatching {
+                        // 1. Fetch recommended (default.json)
+                        val recommended = fetchRecommendedPackages()
 
-                    // 2. Fetch full catalog (content.json)
-                    val fullCatalog =
-                        parseRecommendedPackages(
-                            Downloader.downloadString(ContentsManager.REMOTE_PROFILES),
-                        )
+                        // 2. Fetch full catalog (content.json)
+                        val fullCatalog =
+                            parseRecommendedPackages(
+                                Downloader.downloadString(ContentsManager.REMOTE_PROFILES),
+                            )
 
-                    // 3. Merge: start with recommended, then add any full catalog entries not already present
-                    val seen = recommended.map { it.remoteUrl }.toMutableSet()
-                    val merged = recommended.toMutableList()
-                    for (spec in fullCatalog) {
-                        if (spec.remoteUrl !in seen) {
-                            seen.add(spec.remoteUrl)
-                            merged.add(spec)
+                        // 3. Merge: start with recommended, then add any full catalog entries not already present
+                        val seen = recommended.map { it.remoteUrl }.toMutableSet()
+                        val merged = recommended.toMutableList()
+                        for (spec in fullCatalog) {
+                            if (spec.remoteUrl !in seen) {
+                                seen.add(spec.remoteUrl)
+                                merged.add(spec)
+                            }
                         }
-                    }
-
-                    // 4. Emergency Fallback: If everything failed and we have no profiles, use hardcoded ones
-                    if (merged.isEmpty()) {
-                        merged.addAll(getFallbackRemoteSpecs())
-                    }
-                    merged
+                        merged
+                    }.onFailure { e ->
+                        Log.w("SetupWizardActivity", "Failed to load advanced profiles", e)
+                    }.getOrElse { getCachedRecommendedPackages() }
+                        .toMutableList()
+                        .also { merged ->
+                            // 4. Emergency Fallback: If everything failed and we have no profiles, use hardcoded ones
+                            if (merged.isEmpty()) {
+                                merged.addAll(getFallbackRemoteSpecs())
+                            }
+                        }
                 }
-            advancedProfiles.clear()
-            advancedProfiles.addAll(profiles)
-            refreshAdvancedInstalledSet()
+            if (!isFinishing && !isDestroyed) {
+                advancedProfiles.clear()
+                advancedProfiles.addAll(profiles)
+                refreshAdvancedInstalledSet()
+            }
         }
     }
 
@@ -1246,9 +1254,14 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         advancedSizeFetchesInFlight.addAll(urls)
         urls.forEach { url ->
             lifecycleScope.launch {
-                val size = withContext(Dispatchers.IO) { Downloader.fetchContentLength(url) }
+                val size =
+                    withContext(Dispatchers.IO) {
+                        runCatching { Downloader.fetchContentLength(url) }
+                            .onFailure { e -> Log.w("SetupWizardActivity", "Failed to fetch size for $url", e) }
+                            .getOrDefault(0L)
+                    }
                 advancedSizeFetchesInFlight.remove(url)
-                if (size > 0L) advancedSizeCache[url] = size
+                if (size > 0L && !isFinishing && !isDestroyed) advancedSizeCache[url] = size
             }
         }
     }
@@ -1289,11 +1302,12 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    fetchRecommendedPackages()
+                    runCatching { fetchRecommendedPackages() }
+                        .onFailure { e -> Log.w("SetupWizardActivity", "Failed to refresh recommended packages", e) }
                 }
             } finally {
                 recommendedPackageRefreshInFlight = false
-                refreshWizardState()
+                if (!isFinishing && !isDestroyed) refreshWizardState()
             }
         }
     }

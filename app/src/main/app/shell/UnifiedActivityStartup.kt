@@ -391,11 +391,8 @@ internal fun UnifiedActivity.bootstrapStartupState() {
                 LibraryLayoutMode.GRID_4
             }
 
-        val resolvedStoreVisible =
-            runCatching {
-                val saved = PrefManager.libraryStoreVisible.split(",").toSet()
-                mapOf("steam" to ("steam" in saved), "epic" to ("epic" in saved), "gog" to ("gog" in saved))
-            }.getOrElse { mapOf("steam" to true, "epic" to true, "gog" to true) }
+        // Store visibility filter removed: always show every store's games.
+        val resolvedStoreVisible = mapOf("steam" to true, "epic" to true, "gog" to true)
 
         val resolvedContentFilters =
             runCatching {

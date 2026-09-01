@@ -363,29 +363,6 @@ internal fun UnifiedActivity.DrawerContent(
 
             Spacer(Modifier.height(16.dp))
 
-            // ── Stores ──
-            Text(
-                stringResource(R.string.stores_accounts_stores_header),
-                color = TextSecondary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.4.sp,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-            Spacer(Modifier.height(8.dp))
-
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DrawerFilterButton("Steam", storeVisible["steam"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("steam", it) }
-                DrawerFilterButton("Epic", storeVisible["epic"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("epic", it) }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DrawerFilterButton("GOG", storeVisible["gog"] == true, Modifier.weight(1f)) { onStoreVisibleChanged("gog", it) }
-                Spacer(Modifier.weight(1f))
-            }
-
-            Spacer(Modifier.height(16.dp))
-
             // ── Content Types ──
             Text(
                 stringResource(R.string.settings_content_types_header),
@@ -931,6 +908,30 @@ private fun saveAndroidLibraryApp(context: android.content.Context, app: Install
         .putString("${androidAppId(app.packageName)}_icon", iconFile.takeIf { it.exists() }?.absolutePath ?: "")
         .apply()
     return true
+}
+
+/**
+ * Removes a previously-added Android app from Ok-Lite's own library/launcher list.
+ * This only unpins it from Ok-Lite (clears its prefs entry, cached icon, and play
+ * stats) — it does NOT touch the system APK install, since that requires a separate
+ * system uninstall flow the user must confirm via Android itself.
+ */
+internal fun removeAndroidLibraryApp(context: android.content.Context, packageName: String) {
+    val prefs = androidAppPrefs(context)
+    val id = androidAppId(packageName)
+    val iconPath = prefs.getString("${id}_icon", null)
+    prefs.edit()
+        .remove("${id}_package")
+        .remove("${id}_name")
+        .remove("${id}_icon")
+        .remove("${id}_play_count")
+        .remove("${id}_playtime")
+        .remove("${id}_last_played")
+        .remove("${id}_session_start")
+        .apply()
+    if (!iconPath.isNullOrBlank()) {
+        runCatching { java.io.File(iconPath).delete() }
+    }
 }
 
 internal fun loadAndroidLibraryApps(context: android.content.Context): List<SteamApp> {

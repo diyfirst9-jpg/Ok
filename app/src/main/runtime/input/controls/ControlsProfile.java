@@ -153,6 +153,16 @@ public class ControlsProfile implements Comparable<ControlsProfile> {
     return elementsLoaded;
   }
 
+  /**
+   * Forces the next {@link #loadElements} call to recompute every element's pixel
+   * position from its stored ratio. Used when the view's dimensions change (e.g. a
+   * screen rotation between landscape and portrait) so virtual controls are
+   * repositioned for the new orientation instead of keeping stale absolute coordinates.
+   */
+  public void invalidateElementsForResize() {
+    elementsLoaded = false;
+  }
+
   public void save() {
     File file = getProfileFile(context, id);
 

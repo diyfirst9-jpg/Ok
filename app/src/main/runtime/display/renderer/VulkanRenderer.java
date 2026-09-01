@@ -88,6 +88,130 @@ public class VulkanRenderer
     private static final int MAX_FPS_LIMIT = 1000;
     private volatile int currentFpsLimit = 0;
 
+    // ---- Adaptive frame-time / power management -----------------------------
+    // Goal: run flat-out (max present throughput, no artificial cap) while frame
+    // pacing is smooth, but back off automatically once frame times start
+    // jittering (a sign the GPU/driver/thermals are struggling to sustain that
+    // pace) rather than let stutter compound. We wait for jitter to "settle"
+    // (persist across a full window, not just a couple of spikes — e.g. a single
+    // shader-compile hitch) before reacting, so we don't thrash the present mode
+    // on noise, and we require an equally sustained calm window before climbing
+    // back to full power.
+    private static final int FRAME_WINDOW = 40;
+    private static final long[] frameTimesNs = new long[FRAME_WINDOW];
+    private int frameTimeCount = 0;
+    private int frameTimeIndex = 0;
+    private long lastFrameTimestampNs = 0L;
+    // Coefficient-of-variation (stddev/mean) of recent frame times above this looks jittery.
+    private static final double JITTER_COV_THRESHOLD = 0.22;
+    private static final double CALM_COV_THRESHOLD = 0.10;
+    // Frames a state must persist before we act — this is the "settling" window.
+    private static final int SETTLE_FRAMES = FRAME_WINDOW;
+    private int jitterStreak = 0;
+    private int calmStreak = 0;
+    private boolean powerSaveActive = false;
+    // Off by default: adaptive power management only runs once the user turns on
+    // "Power Save Mode" in the shortcut/game settings — otherwise it stays fully
+    // out of the frame loop (single boolean check, no sampling overhead).
+    private volatile boolean adaptivePowerSaveEnabled = false;
+    // The mode the user actually asked for (Settings). Adaptive logic only ever
+    // steps *down* from this and always restores it — it never picks a mode the
+    // user didn't already opt into.
+    private volatile int userRequestedPresentMode = PRESENT_MODE_FIFO;
+    private volatile int userRequestedFpsLimit = 0;
+
+    public void setAdaptivePowerSaveEnabled(boolean enabled) {
+        adaptivePowerSaveEnabled = enabled;
+        if (!enabled && powerSaveActive) {
+            // Toggled off mid-session while a throttled state was active: restore
+            // the user's normal present mode/limit immediately instead of leaving
+            // it capped with nothing left to turn it back on.
+            final int restoreMode = userRequestedPresentMode;
+            mainHandler.post(() -> {
+                synchronized (this) {
+                    if (nativeHandle != 0) nativeSetPresentMode(nativeHandle, restoreMode);
+                }
+            });
+            applyTemporaryFpsLimit(userRequestedFpsLimit);
+            powerSaveActive = false;
+            jitterStreak = 0;
+            calmStreak = 0;
+        }
+    }
+
+    private void recordFrameTimeAndAdaptPower() {
+        if (!adaptivePowerSaveEnabled) return;
+        long now = System.nanoTime();
+        long last = lastFrameTimestampNs;
+        lastFrameTimestampNs = now;
+        if (last == 0L) return; // first frame, no interval yet
+        long dt = now - last;
+        if (dt <= 0L || dt > 500_000_000L) return; // ignore pauses/backgrounding, not real jitter
+
+        frameTimesNs[frameTimeIndex] = dt;
+        frameTimeIndex = (frameTimeIndex + 1) % FRAME_WINDOW;
+        if (frameTimeCount < FRAME_WINDOW) frameTimeCount++;
+        if (frameTimeCount < FRAME_WINDOW) return; // need a full window before judging
+
+        double mean = 0;
+        for (int i = 0; i < FRAME_WINDOW; i++) mean += frameTimesNs[i];
+        mean /= FRAME_WINDOW;
+        double variance = 0;
+        for (int i = 0; i < FRAME_WINDOW; i++) {
+            double d = frameTimesNs[i] - mean;
+            variance += d * d;
+        }
+        variance /= FRAME_WINDOW;
+        double cov = mean > 0 ? Math.sqrt(variance) / mean : 0;
+
+        // Only intervene when the user picked a max-throughput mode; if they
+        // explicitly chose FIFO (already the power-friendly, vsync-capped mode)
+        // there's nothing extra for us to dial back.
+        boolean canPowerSave = userRequestedPresentMode != PRESENT_MODE_FIFO;
+
+        if (cov >= JITTER_COV_THRESHOLD) {
+            jitterStreak++;
+            calmStreak = 0;
+        } else if (cov <= CALM_COV_THRESHOLD) {
+            calmStreak++;
+            jitterStreak = 0;
+        } else {
+            // In between: neither clearly jittery nor clearly calm — hold state, don't oscillate.
+            jitterStreak = 0;
+            calmStreak = 0;
+        }
+
+        if (!powerSaveActive && canPowerSave && jitterStreak >= SETTLE_FRAMES) {
+            // Frame pacing has settled into a jittery pattern for a full window —
+            // step down to the power-efficient present mode and cap the rate to
+            // roughly what it was actually sustaining, so we stop fighting for a
+            // peak the hardware isn't holding anyway.
+            double sustainedFps = 1_000_000_000.0 / mean;
+            int conservativeCap = Math.max(20, (int) Math.floor(sustainedFps * 0.9));
+            mainHandler.post(() -> {
+                synchronized (this) {
+                    if (nativeHandle != 0) nativeSetPresentMode(nativeHandle, PRESENT_MODE_FIFO);
+                }
+            });
+            int cap = userRequestedFpsLimit == 0 ? conservativeCap : Math.min(conservativeCap, userRequestedFpsLimit);
+            applyTemporaryFpsLimit(cap);
+            powerSaveActive = true;
+            jitterStreak = 0;
+        } else if (powerSaveActive && calmStreak >= SETTLE_FRAMES) {
+            // Pacing has been smooth for a full window again — restore the
+            // user's original present mode/limit and let it run at full power.
+            final int restoreMode = userRequestedPresentMode;
+            mainHandler.post(() -> {
+                synchronized (this) {
+                    if (nativeHandle != 0) nativeSetPresentMode(nativeHandle, restoreMode);
+                }
+            });
+            applyTemporaryFpsLimit(userRequestedFpsLimit);
+            powerSaveActive = false;
+            calmStreak = 0;
+        }
+    }
+
     // Must mirror VK_MAX_RENDERABLE_WINDOWS / VK_MAX_EFFECTS in vk_state.h.
     private static final int MAX_WINDOWS = 64;
     private static final int MAX_EFFECTS = 8;
@@ -312,13 +436,21 @@ public class VulkanRenderer
 
     @Override
     public void onDrawFrame() {
-        if (nativeHandle == 0) return;
-        buildAndSubmitFrame();
+        // Snapshot + guard under the same monitor destroy() uses, so a concurrent
+        // nativeDestroy() (which frees the Vulkan device) can never overlap a
+        // nativeSetScene/nativeRenderFrame call using a handle that's mid-teardown.
+        // Previously this read nativeHandle unsynchronized, which was a real
+        // use-after-free/crash risk under surface teardown during heavy load.
+        synchronized (this) {
+            long handle = nativeHandle;
+            if (handle == 0 || destroyed.get()) return;
+            buildAndSubmitFrame(handle);
+        }
     }
 
     // ----- Scene assembly ----------------------------------------------------
 
-    private void buildAndSubmitFrame() {
+    private void buildAndSubmitFrame(long handle) {
         // Self-heal: if the real surface size differs from our cache (display reparent), recompute the viewport.
         if (xServerView != null) {
             int actualW = xServerView.getSurfaceWidth();
@@ -533,7 +665,7 @@ public class VulkanRenderer
 
         }
 
-        textureUploadBatch.flush(nativeHandle);
+        textureUploadBatch.flush(handle);
 
         buf.putInt(OFF_WINDOW_COUNT, winCount);
         buf.putLong(OFF_CURSOR_HANDLE, cursorHandle);
@@ -562,9 +694,11 @@ public class VulkanRenderer
             buf.putFloat(pOff + 12, effectParamsScratch[i * 4 + 3]);
         }
 
-        nativeSetScene(nativeHandle, buf);
+        nativeSetScene(handle, buf);
         // nativeSetFpsLimit is a native no-op (pacing is done elsewhere); not called per frame.
-        nativeRenderFrame(nativeHandle);
+        nativeRenderFrame(handle);
+
+        recordFrameTimeAndAdaptPower();
     }
 
     // ----- WindowManager / Pointer listeners --------------------------------
@@ -871,6 +1005,15 @@ public class VulkanRenderer
     public boolean isMagnifierUIActive() { return magnifierUIActive; }
 
     public void setFpsLimit(int fps) {
+        int clamped = Math.max(0, Math.min(fps, MAX_FPS_LIMIT));
+        userRequestedFpsLimit = clamped;
+        if (!powerSaveActive) currentFpsLimit = clamped;
+    }
+
+    // Used only by the adaptive power-save logic to apply a temporary cap
+    // without overwriting the user's actual preference (userRequestedFpsLimit),
+    // which is restored verbatim once frame pacing settles back down.
+    private void applyTemporaryFpsLimit(int fps) {
         currentFpsLimit = Math.max(0, Math.min(fps, MAX_FPS_LIMIT));
     }
 
@@ -886,7 +1029,8 @@ public class VulkanRenderer
 
     public void setPresentMode(int mode) {
         requestedPresentMode = mode;
-        if (nativeHandle != 0) nativeSetPresentMode(nativeHandle, mode);
+        userRequestedPresentMode = mode;
+        if (nativeHandle != 0 && !powerSaveActive) nativeSetPresentMode(nativeHandle, mode);
     }
 
     public static int parsePresentMode(String name) {

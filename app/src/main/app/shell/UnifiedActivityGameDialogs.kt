@@ -1653,40 +1653,11 @@ internal fun UnifiedActivity.GOGGameSettingsDialog(
 
 
 internal object AndroidLibraryPlaySessionTracker {
-    private const val PREFS = "android_library_apps"
-    private const val SESSION_SUFFIX = "_session_start"
+    // Play statistics system removed: tracker is now a no-op kept only so
+    // existing call sites don't need to change.
+    fun begin(context: android.content.Context, app: SteamApp) {}
 
-    fun begin(context: android.content.Context, app: SteamApp) {
-        val prefs = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
-        val now = System.currentTimeMillis()
-        val key = app.id.toString()
-        val count = prefs.getInt("${key}_play_count", 0)
-        prefs.edit()
-            .putInt("${key}_play_count", count + 1)
-            .putLong("${key}_last_played", now)
-            .putLong("${key}$SESSION_SUFFIX", now)
-            .apply()
-    }
-
-    fun finish(context: android.content.Context) {
-        val prefs = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
-        val editor = prefs.edit()
-        var changed = false
-        prefs.all.keys
-            .filter { it.endsWith(SESSION_SUFFIX) }
-            .forEach { sessionKey ->
-                val started = prefs.getLong(sessionKey, 0L)
-                if (started > 0L) {
-                    val elapsed = (System.currentTimeMillis() - started).coerceAtLeast(0L)
-                    val id = sessionKey.removeSuffix(SESSION_SUFFIX)
-                    val total = prefs.getLong("${id}_playtime", 0L)
-                    editor.putLong("${id}_playtime", total + elapsed)
-                    editor.remove(sessionKey)
-                    changed = true
-                }
-            }
-        if (changed) editor.apply()
-    }
+    fun finish(context: android.content.Context) {}
 }
 
 @Composable
@@ -1781,7 +1752,9 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                     playCount = androidPlayCount,
                     lastPlayedMillis = androidLastPlayed,
                     installSizeText = null,
-                    isCustom = false,
+                    // Not a real "custom" shortcut, but we only ever unpin (never run a
+                    // system APK uninstall) so the trash button should read "Remove".
+                    isCustom = true,
                     isRetro = false,
                     showBootToDesktop = false,
                     showSaveTransfer = false,
@@ -1828,7 +1801,15 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                     onShortcut = {},
                     onCloudSaves = {},
                     onSaveTransfer = null,
-                    onUninstall = {},
+                    onUninstall = {
+                        // Unpin the app from Ok-Lite's own library/launcher. The confirm
+                        // popup is already handled by LibraryGameLaunchScreen before this
+                        // fires; previously this callback was a no-op, so the trash button
+                        // did nothing.
+                        removeAndroidLibraryApp(context, androidPackage)
+                        this@LibraryGameDetailDialog.libraryRefreshSignal++
+                        onDismissRequest()
+                    },
                 )
             }
         }

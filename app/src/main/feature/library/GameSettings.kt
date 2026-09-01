@@ -417,6 +417,7 @@ class GameSettingsStateHolder {
     val refreshRateEntries = mutableStateOf<List<String>>(emptyList())
     val selectedRefreshRate = mutableIntStateOf(0)
     val fpsLimit = mutableIntStateOf(0)
+    val adaptivePowerSaveEnabled = mutableStateOf(false)
 
     // Display
     val graphicsDriverEntries = mutableStateOf<List<String>>(emptyList())
@@ -1690,6 +1691,14 @@ private fun GeneralSection(
                     )
                 }
             }
+        }
+        Spacer(Modifier.height(SettingSectionGap))
+        SettingGroup(verticalPadding = SettingTightGap) {
+            SettingSwitch(
+                label = "Power Save Mode",
+                checked = state.adaptivePowerSaveEnabled.value,
+                onCheckedChange = { on -> state.adaptivePowerSaveEnabled.value = on }
+            )
         }
     }
 }

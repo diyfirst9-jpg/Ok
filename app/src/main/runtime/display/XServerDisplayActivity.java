@@ -732,6 +732,26 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         return shortcut != null ? shortcut.getSettingExtra(key, containerValue) : containerValue;
     }
 
+    /**
+     * Reduces a comma-separated CPU core list (e.g. "0,1,2,3") to ~80% of its
+     * entries (floor, minimum 1 core kept) for Power Save Mode. Returns null if
+     * the list is empty/unparseable so the caller can leave the original value
+     * untouched.
+     */
+    private String capCpuListForPowerSave(String cpuList) {
+        if (cpuList == null || cpuList.trim().isEmpty()) return null;
+        String[] parts = cpuList.split(",");
+        java.util.ArrayList<String> cores = new java.util.ArrayList<>();
+        for (String p : parts) {
+            String trimmed = p.trim();
+            if (!trimmed.isEmpty()) cores.add(trimmed);
+        }
+        if (cores.isEmpty()) return null;
+        int keep = Math.max(1, (int) Math.floor(cores.size() * 0.8));
+        if (keep >= cores.size()) return null; // nothing to cap (e.g. already 1 core)
+        return String.join(",", cores.subList(0, keep));
+    }
+
     // paramsJson is nested {"<effect>":{uniform:value}} when nested, else the flat legacy map
     private static class ResolvedReshade {
         java.util.List<com.winlator.cmod.runtime.reshade.ReshadeLoadout.Entry> loadout;
@@ -1571,6 +1591,26 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 rawShortcutCpuListWoW64 + "' container='" + containerCpuListWoW64 +
                 "' effective='" + effectiveCpuListWoW64 + "' affinityMask=0x" +
                 Integer.toHexString(taskAffinityMaskWoW64 & 0xFFFF));
+
+        boolean powerSaveModeEnabled = shortcut != null
+                && "1".equals(shortcut.getExtra("powerSaveMode", "0"));
+        if (powerSaveModeEnabled) {
+            // Cap the CPU cores the guest (box64/box86) is allowed to run on to ~80%
+            // of what was resolved above, so the emulated workload has a hard
+            // ceiling instead of being free to pin every core at 100%.
+            String cappedCpuList = capCpuListForPowerSave(effectiveCpuList);
+            String cappedCpuListWoW64 = capCpuListForPowerSave(effectiveCpuListWoW64);
+            if (cappedCpuList != null) {
+                effectiveCpuList = cappedCpuList;
+                taskAffinityMask = ProcessHelper.getAffinityMask(effectiveCpuList);
+            }
+            if (cappedCpuListWoW64 != null) {
+                effectiveCpuListWoW64 = cappedCpuListWoW64;
+                taskAffinityMaskWoW64 = ProcessHelper.getAffinityMask(effectiveCpuListWoW64);
+            }
+            Log.d("XServerDisplayActivity", "Power Save Mode: capped CPUList='" +
+                    effectiveCpuList + "' CPUListWoW64='" + effectiveCpuListWoW64 + "'");
+        }
 
         String wmClass = shortcut != null ? shortcut.getExtra("wmClass", "") : "";
         Log.d("XServerDisplayActivity", "Startup wmClass: " + wmClass);
@@ -2761,35 +2801,13 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
     }
 
     private void savePlaytimeData(boolean synchronous) {
-        long endTime = System.currentTimeMillis();
-        long playtime = endTime - startTime;
-
-        if (playtime < 0) {
-            playtime = 0;
-        }
-
-        SharedPreferences.Editor editor = playtimePrefs.edit();
-        String playtimeKey = shortcutName + "_playtime";
-
-        long totalPlaytime = playtimePrefs.getLong(playtimeKey, 0) + playtime;
-        editor.putLong(playtimeKey, totalPlaytime);
-        if (synchronous) {
-            editor.commit();
-        } else {
-            editor.apply();
-        }
-
+        // Playtime statistics system removed: no-op, just track internal startTime.
         startTime = System.currentTimeMillis();
     }
 
 
     private void incrementPlayCount() {
-        SharedPreferences.Editor editor = playtimePrefs.edit();
-        String playCountKey = shortcutName + "_play_count";
-        int playCount = playtimePrefs.getInt(playCountKey, 0) + 1;
-        editor.putInt(playCountKey, playCount);
-        editor.putLong(shortcutName + "_last_played", System.currentTimeMillis());
-        editor.apply();
+        // Playtime statistics system removed: no-op.
     }
 
     private boolean isSteamShortcut() {
@@ -7470,6 +7488,19 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             }
         }
         renderer.setFpsLimit(runtimeFpsLimit);
+        boolean powerSaveModeEnabled =
+                shortcut != null && "1".equals(shortcut.getExtra("powerSaveMode", "0"));
+        renderer.setAdaptivePowerSaveEnabled(powerSaveModeEnabled);
+        if (powerSaveModeEnabled && runtimeFpsLimit == 0) {
+            // No explicit user FPS cap set: proactively keep the GPU under ~80% of
+            // the display's max refresh rate as a baseline ceiling, on top of the
+            // renderer's reactive jitter-based throttling.
+            int maxSupportedRate = RefreshRateUtils.getMaxSupportedRefreshRate(this);
+            if (maxSupportedRate > 0) {
+                int baselineCap = Math.max(20, (int) Math.floor(maxSupportedRate * 0.8));
+                renderer.setFpsLimit(baselineCap);
+            }
+        }
 
         applyScreenEffects();
         xServer.setRenderer(renderer);

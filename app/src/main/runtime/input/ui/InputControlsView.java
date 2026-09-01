@@ -528,6 +528,19 @@ public class InputControlsView extends View {
     return (int) Mathf.roundTo(getHeight(), snappingSize);
   }
 
+  @Override
+  protected synchronized void onSizeChanged(int w, int h, int oldw, int oldh) {
+    super.onSizeChanged(w, h, oldw, oldh);
+    // Re-derive control positions when the view is resized (e.g. rotating the
+    // device between landscape and portrait, or entering/exiting split-screen).
+    // Positions are stored as ratios of the view size, so without this the
+    // virtual buttons/joystick keep the pixel coordinates computed for the old
+    // size and can end up clustered or off-screen in the new orientation.
+    if (oldw != 0 && oldh != 0 && (w != oldw || h != oldh) && profile != null) {
+      profile.invalidateElementsForResize();
+    }
+  }
+
   private void createMouseMoveTimer() {
     if (xServer == null) return;
     WinHandler winHandler = xServer.getWinHandler();

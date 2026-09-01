@@ -363,29 +363,6 @@ internal fun LibraryGameLaunchScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (totalPlaytimeMillis > 0L) {
-                        val playtimeText = remember(totalPlaytimeMillis) { formatLibraryPlaytime(totalPlaytimeMillis) }
-                        GameStatChip(
-                            icon = Icons.Outlined.Schedule,
-                            label = stringResource(R.string.library_games_playtime),
-                            value = playtimeText,
-                        )
-                    }
-                    if (playCount > 0) {
-                        GameStatChip(
-                            icon = Icons.Outlined.SportsEsports,
-                            label = stringResource(R.string.library_games_plays),
-                            value = playCount.toString(),
-                        )
-                    }
-                    if (lastPlayedMillis > 0L) {
-                        val lastPlayedText = remember(lastPlayedMillis) { formatLibraryLastPlayed(lastPlayedMillis) }
-                        GameStatChip(
-                            icon = Icons.Outlined.History,
-                            label = stringResource(R.string.library_games_last_played),
-                            value = lastPlayedText,
-                        )
-                    }
                     if (installSizeText != null) {
                         GameStatChip(
                             icon = Icons.Outlined.Storage,

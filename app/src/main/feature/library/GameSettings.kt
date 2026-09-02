@@ -21,7 +21,11 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.outlined.Speed
+import java.io.File
+import android.os.Environment
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -142,6 +146,7 @@ import com.winlator.cmod.runtime.display.environment.ImageFs
 import com.winlator.cmod.runtime.display.lsfg.LosslessScaling
 import com.winlator.cmod.shared.android.DirectoryPickerDialog
 import com.winlator.cmod.shared.ui.dialog.findActivity
+import com.winlator.cmod.shared.ui.layout.isPortraitLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -5674,6 +5679,20 @@ private fun SettingGroup(
     ) {
         content()
     }
+}
+
+@Composable
+private fun SettingPairRow(
+    modifier: Modifier = Modifier,
+    content: @Composable FlowRowScope.() -> Unit,
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(SettingItemGap),
+        verticalArrangement = Arrangement.spacedBy(SettingItemGap),
+        maxItemsInEachRow = if (isPortraitLayout()) 1 else Int.MAX_VALUE,
+        content = content,
+    )
 }
 
 @Composable

@@ -91,9 +91,16 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.ZoomIn
+
+/**
+ * Frame generation precision modes. Reconstructed: source definitions were missing
+ * from the checkout. Values mirror the "frameGenPrecision" extra used elsewhere
+ * (stored as "1" or "2", defaulting to "1" / FP16).
+ */
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -179,6 +186,13 @@ import com.winlator.cmod.shared.ui.nav.PaneNavRegistry as SharedPaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.paneNavItem as sharedPaneNavItem
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 import kotlin.math.roundToInt
+
+/**
+ * Aliases into com.winlator.cmod.runtime.display.lsfg.LosslessScaling so the UI layer
+ * doesn't hardcode its own copy of these values (kept in sync with the real source of truth).
+ */
+val FrameGenPrecisionFP16 = com.winlator.cmod.runtime.display.lsfg.LosslessScaling.VARIANT_FP16
+val FrameGenPrecisionFP32 = com.winlator.cmod.runtime.display.lsfg.LosslessScaling.VARIANT_FP32
 
 private const val DrawerGradientLift = SessionDrawerStyle.GradientLift
 

@@ -1700,4 +1700,6 @@ Installed path:
     <string name="settings_frame_generation_not_owned">Frame generation uses shaders from Lossless Scaling. Buy it on Steam with the signed-in account to enable this.</string>
     <string name="settings_frame_generation_locate">Select Lossless.dll…</string>
     <string name="session_drawer_rail_label_frame_gen">FPS</string>
+    <string name="networking_driver_winnative">WinNative Network Driver</string>
+    <string name="networking_driver_none">Wine default (no adapter emulation)</string>
     </resources>

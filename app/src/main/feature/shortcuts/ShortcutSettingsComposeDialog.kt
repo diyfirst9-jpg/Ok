@@ -1,4 +1,5 @@
 package com.winlator.cmod.feature.shortcuts
+import com.winlator.cmod.runtime.display.environment.components.NetworkingSettings
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context

@@ -1689,6 +1689,7 @@ Installed path:
     <string name="frame_generation_precision">Precision</string>
     <string name="session_drawer_frame_generation_note">Interpolates between rendered frames with Lossless Scaling. Smoother motion, but one extra frame of input latency.</string>
     <string name="session_drawer_frame_generation_target_note">Climbs toward the target only while it measurably helps, instead of holding a fixed multiplier.</string>
+    <string name="session_drawer_frame_generation_flow_scale">Flow Scale</string>
     <string name="session_drawer_frame_generation_missing">Install Lossless Scaling in container settings to use frame generation.</string>
     <string name="settings_frame_generation_title">Frame Generation</string>
     <string name="settings_frame_generation_importing">Looking for Lossless Scaling…</string>

@@ -2648,6 +2648,7 @@ class ShortcutSettingsComposeDialog private constructor(
             sb.append("container_id=${container.id}\n")
             sb.append("use_container_defaults=1\n")
             FileUtils.writeString(shortcutFile, sb.toString())
+            ContainerManager.invalidateShortcutsCache()
             return Shortcut(container, shortcutFile)
         }
     }

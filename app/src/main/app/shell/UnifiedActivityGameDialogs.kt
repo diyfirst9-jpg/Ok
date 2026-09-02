@@ -1411,7 +1411,7 @@ internal fun UnifiedActivity.GOGGameSettingsDialog(
         value =
             withContext(Dispatchers.IO) {
                 val shortcut =
-                    ContainerManager(context).loadShortcuts().find {
+                    ContainerManager(context).getShortcutsCached().find {
                         it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == app.id
                     }
                 HomeShortcutUiState(
@@ -1440,7 +1440,7 @@ internal fun UnifiedActivity.GOGGameSettingsDialog(
                                 onClick = {
                                     val containerManager = ContainerManager(context)
                                     val shortcut =
-                                        containerManager.loadShortcuts().find {
+                                        containerManager.getShortcutsCached().find {
                                             it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == app.id
                                         } ?: ShortcutSettingsComposeDialog.createLibraryShortcut(
                                             context = context,
@@ -1538,7 +1538,7 @@ internal fun UnifiedActivity.GOGGameSettingsDialog(
                 var isWorking by remember { mutableStateOf(false) }
                 val shortcut =
                     remember(app.id) {
-                        ContainerManager(context).loadShortcuts().find {
+                        ContainerManager(context).getShortcutsCached().find {
                             it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == app.id
                         }
                     }
@@ -1886,7 +1886,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                 val shortcut =
                     when {
                         isGog -> {
-                            ContainerManager(context).loadShortcuts().find {
+                            ContainerManager(context).getShortcutsCached().find {
                                 it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == gogGame!!.id
                             }
                         }
@@ -2435,7 +2435,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                 val containerManager = ContainerManager(context)
                                 when {
                                     isGog ->
-                                        containerManager.loadShortcuts().find {
+                                        containerManager.getShortcutsCached().find {
                                             it.getExtra("game_source") == "GOG" &&
                                                 it.getExtra("gog_id") == gogGame!!.id
                                         } ?: ShortcutSettingsComposeDialog.createLibraryShortcut(
@@ -2760,7 +2760,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                     val containerManager = ContainerManager(context)
                                     when {
                                         isGog -> {
-                                            containerManager.loadShortcuts().find {
+                                            containerManager.getShortcutsCached().find {
                                                 it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == gogGame!!.id
                                             }
                                         }
@@ -2945,7 +2945,7 @@ internal fun UnifiedActivity.LibraryGameDetailDialog(
                                         val containerManager = ContainerManager(context)
                                         when {
                                             isGog -> {
-                                                containerManager.loadShortcuts().find {
+                                                containerManager.getShortcutsCached().find {
                                                     it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == gogGame!!.id
                                                 }
                                             }

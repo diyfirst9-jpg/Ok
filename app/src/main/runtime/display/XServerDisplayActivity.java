@@ -773,7 +773,8 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 parseSettingInt(getFrameGenSetting("frameGenMultiplier", containerMultiplier), 2));
         frameGenTargetRate = Math.max(0,
                 parseSettingInt(getFrameGenSetting("frameGenTargetRate", containerTargetRate), 0));
-        frameGenFlowScale = 70; // Quality presets are intentionally removed; keep the stable full-resolution flow path.
+        frameGenFlowScale = clampFrameGenFlowScale(
+                parseSettingInt(getFrameGenSetting("frameGenFlowScale", containerFlowScale), 70));
         frameGenPrecision = parseSettingInt(
                 getFrameGenSetting("frameGenPrecision", containerPrecision),
                 com.winlator.cmod.runtime.display.lsfg.LosslessScaling.VARIANT_FP16);

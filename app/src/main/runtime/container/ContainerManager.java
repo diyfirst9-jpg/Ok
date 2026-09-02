@@ -465,6 +465,43 @@ public class ContainerManager {
     return shortcuts;
   }
 
+  // loadShortcuts() is expensive: it constructs a new Shortcut for every
+  // .desktop file across every container, and each Shortcut constructor does
+  // real I/O (bitmap decode, occasionally EXE icon extraction). Several UI
+  // call sites invoke it repeatedly just to .find{} a single shortcut within
+  // one user interaction, paying that full cost every time.
+  //
+  // getShortcutsCached() reuses a result up to SHORTCUTS_CACHE_TTL_MS old
+  // instead. This is a short-TTL cache, not an invalidation-tracked one:
+  // shortcuts are mutated from 40+ call sites across the codebase (rename,
+  // custom art, container edits...) and reliably threading invalidation
+  // through all of them without a build/test loop risks stale-UI bugs worse
+  // than the inefficiency being fixed. A short TTL bounds staleness to
+  // something no user interaction can perceive, with no changes required at
+  // those mutation sites. Use loadShortcuts() directly wherever a
+  // guaranteed-fresh read matters (e.g. resolving per-game settings right
+  // before launch, or any read immediately following upgradeShortcuts()).
+  private static final long SHORTCUTS_CACHE_TTL_MS = 2000;
+  private static volatile ArrayList<Shortcut> cachedShortcuts = null;
+  private static volatile long cachedShortcutsAtMs = 0;
+
+  public ArrayList<Shortcut> getShortcutsCached() {
+    long now = System.currentTimeMillis();
+    ArrayList<Shortcut> snapshot = cachedShortcuts;
+    if (snapshot != null && (now - cachedShortcutsAtMs) < SHORTCUTS_CACHE_TTL_MS) {
+      return snapshot;
+    }
+    ArrayList<Shortcut> fresh = loadShortcuts();
+    cachedShortcuts = fresh;
+    cachedShortcutsAtMs = now;
+    return fresh;
+  }
+
+  /** Forces the next getShortcutsCached() call to re-scan disk. Safe to call from any thread. */
+  public static void invalidateShortcutsCache() {
+    cachedShortcuts = null;
+  }
+
   public void upgradeShortcuts(final Runnable onDone) {
     if (!shortcutUpgradeRunning.compareAndSet(false, true)) return;
 

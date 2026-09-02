@@ -44,11 +44,12 @@ object LosslessAutoImport {
         )
     }
 
+    // Ownership is no longer a gate: a Lossless.dll the user placed themselves (or picked via
+    // the file browser) is sufficient. isOwned() is kept around only as an optional signal for
+    // steamCandidateDirs()/auto-detect ordering, never as a precondition for using a DLL that's
+    // already sitting on disk. Requiring a Steam login before a manually supplied file could be
+    // used made no sense: the file itself is the proof the user has it.
     fun sync(context: Context): Outcome {
-        if (!isOwned()) {
-            return Outcome(if (LosslessScaling.isInstalled(context)) RESULT_READY else RESULT_NOT_OWNED, "")
-        }
-
         val dll = findDll(context)
         if (dll == null) {
             return Outcome(if (LosslessScaling.isInstalled(context)) RESULT_READY else RESULT_NOT_FOUND, "")
@@ -64,7 +65,6 @@ object LosslessAutoImport {
     }
 
     fun importFrom(context: Context, uri: Uri): Outcome {
-        if (!isOwned()) return Outcome(RESULT_NOT_OWNED, "")
         val status = LosslessScaling.installFrom(context, uri)
         if (status != LosslessScaling.STATUS_OK) return Outcome(RESULT_FAILED, "")
         return Outcome(RESULT_IMPORTED, uri.lastPathSegment?.substringAfterLast('/').orEmpty())
@@ -72,7 +72,6 @@ object LosslessAutoImport {
 
     fun importFrom(context: Context, dll: File): Outcome {
         val name = dll.parentFile?.name?.takeIf { it.isNotBlank() } ?: dll.name
-        if (!isOwned()) return Outcome(RESULT_NOT_OWNED, name)
         val status = LosslessScaling.installFrom(context, dll)
         if (status != LosslessScaling.STATUS_OK) return Outcome(RESULT_FAILED, name)
         return Outcome(RESULT_IMPORTED, name)

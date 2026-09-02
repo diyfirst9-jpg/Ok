@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 // Single source of truth for the perf HUD (FrameRating pushes values, the menu pushes the enabled set). Element indices: 0 FPS, 1 renderer, 2 GPU, 3 CPU, 4 RAM, 5 battery+temp, 6 frametime.
 object PerformanceHudState {
@@ -96,7 +97,7 @@ private data class GaugeSpec(
 fun PerformanceHudOverlay(modifier: Modifier = Modifier) {
     SmoothPanelEntry {
 
-    val s by PerformanceHudState.state.collectAsState()
+    val s by PerformanceHudState.state.collectAsStateWithLifecycle()
     // A gauge stays while its element is enabled; a momentarily-unavailable value shows N/A rather than dropping the gauge (which would make the row jump).
     val gauges = ArrayList<GaugeSpec>(8)
     if (s.enabled.getOrElse(0) { false }) {

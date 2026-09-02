@@ -485,8 +485,14 @@ public class PresentExtension
           presentPixmap(client, p, outputStream);
         }
 
-        if (client.xServer.getRenderer() != null)
+        if (client.xServer.getRenderer() != null) {
+          // Must fire on every real guest present: this is the native frame-generation
+          // pacer's only source-frame signal (see VulkanRenderer.onGuestFramePresented).
+          // Without it, framegen's source-rate tracking never advances even though the
+          // guest app/audio keep running fine.
+          client.xServer.getRenderer().onGuestFramePresented();
           client.xServer.getRenderer().requestRenderCoalesced();
+        }
         break;
       }
       case ClientOpcodes.SELECT_INPUT:

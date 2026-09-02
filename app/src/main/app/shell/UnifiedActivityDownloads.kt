@@ -221,6 +221,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 // Downloads tab + queue/progress UI + game/workshop managers, split out of UnifiedActivity.kt (behavior-identical).
 
@@ -646,11 +647,11 @@ internal fun UnifiedActivity.SteamTaskProgressBody(info: DownloadInfo) {
         info.addProgressListener(listener)
         onDispose { info.removeProgressListener(listener) }
     }
-    val status by info.getStatusFlow().collectAsState()
+    val status by info.getStatusFlow().collectAsStateWithLifecycle()
     // The status message carries a unique suffix every progress tick;
     // keying the byte sample on it (and on `progress`) keeps the card
     // refreshing live — the Downloads-tab row relies on the same.
-    val statusMessage by info.getStatusMessageFlow().collectAsState()
+    val statusMessage by info.getStatusMessageFlow().collectAsStateWithLifecycle()
     val fraction = progress.coerceIn(0f, 1f)
     val animatedFraction = fraction
     val (doneBytes, totalBytes) =
@@ -927,8 +928,8 @@ internal fun UnifiedActivity.DownloadItemDeck(
         info.addProgressListener(listener)
         onDispose { info.removeProgressListener(listener) }
     }
-    val status by info.getStatusFlow().collectAsState()
-    val statusMessage by info.getStatusMessageFlow().collectAsState()
+    val status by info.getStatusFlow().collectAsStateWithLifecycle()
+    val statusMessage by info.getStatusMessageFlow().collectAsStateWithLifecycle()
     var previousStatus by remember { mutableStateOf(status) }
     var showCompletedProgressBar by remember { mutableStateOf(status != DownloadPhase.COMPLETE) }
     val isSteam = id.startsWith("STEAM_")
@@ -1051,7 +1052,7 @@ internal fun UnifiedActivity.DownloadItemDeck(
             Spacer(Modifier.width(16.dp))
 
             Column(Modifier.weight(1f)) {
-                val currentFile by info.getCurrentFileNameFlow().collectAsState()
+                val currentFile by info.getCurrentFileNameFlow().collectAsStateWithLifecycle()
                 val (downloadedBytes, totalBytes) = info.getDisplayBytesProgress()
                 val speed = info.getCurrentDownloadSpeed() ?: 0L
                 val percentage = (animatedProgress * 100).roundToInt()

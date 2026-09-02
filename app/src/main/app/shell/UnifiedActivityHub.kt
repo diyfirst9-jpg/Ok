@@ -231,6 +231,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 // Main hub scaffold + top bar + glasses sheet + library carousel, split out of UnifiedActivity.kt (behavior-identical).
 
@@ -293,17 +294,17 @@ internal fun UnifiedActivity.UnifiedHub() {
         drawerOpen = drawerState.isOpen
         if (!drawerState.isOpen) drawerNavBridge.controllerActive = false
     }
-    val isLoggedIn by SteamService.isLoggedInFlow.collectAsState()
-    val chatServiceEnabled by SteamService.chatServiceEnabledFlow.collectAsState()
-    val isEpicLoggedIn by EpicAuthManager.isLoggedInFlow.collectAsState()
-    val isGogLoggedIn by GOGAuthManager.isLoggedInFlow.collectAsState()
+    val isLoggedIn by SteamService.isLoggedInFlow.collectAsStateWithLifecycle()
+    val chatServiceEnabled by SteamService.chatServiceEnabledFlow.collectAsStateWithLifecycle()
+    val isEpicLoggedIn by EpicAuthManager.isLoggedInFlow.collectAsStateWithLifecycle()
+    val isGogLoggedIn by GOGAuthManager.isLoggedInFlow.collectAsStateWithLifecycle()
     val steamApps by db.steamAppDao().getAllOwnedApps().collectAsState(initial = emptyList())
     val context = LocalContext.current
-    val persona by SteamService.instance?.localPersona?.collectAsState()
+    val persona by SteamService.instance?.localPersona?.collectAsStateWithLifecycle()
         ?: remember { mutableStateOf(null) }
     val scope = rememberCoroutineScope()
     val rightDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val friends by SteamService.instance?.friendsList?.collectAsState()
+    val friends by SteamService.instance?.friendsList?.collectAsStateWithLifecycle()
         ?: remember { mutableStateOf(emptyList<com.winlator.cmod.feature.stores.steam.data.SteamFriendEntry>()) }
     var chatFriend by remember { mutableStateOf<com.winlator.cmod.feature.stores.steam.data.SteamFriendEntry?>(null) }
     val friendsDrawerOpen = rightDrawerState.isOpen
@@ -1061,7 +1062,7 @@ internal fun UnifiedActivity.DrawerSwipeHotZone(
 @Composable
 internal fun UnifiedActivity.GlassesSettingsSheet(onDismiss: () -> Unit) {
     val gm = com.winlator.cmod.runtime.display.GlassesManager
-    val settings by gm.settings.collectAsState()
+    val settings by gm.settings.collectAsStateWithLifecycle()
     val brightnessMax = gm.brightnessMax()
     val volumeMax = gm.volumeMax()
     val brightness = if (settings.brightness < 0) brightnessMax else settings.brightness
@@ -1681,7 +1682,7 @@ internal fun UnifiedActivity.LibraryCornerActions(
     onFilesClicked: () -> Unit,
     onAddGameClicked: () -> Unit,
 ) {
-    val glassesConnected by com.winlator.cmod.runtime.display.GlassesManager.connected.collectAsState()
+    val glassesConnected by com.winlator.cmod.runtime.display.GlassesManager.connected.collectAsStateWithLifecycle()
     var showGlassesPanel by remember { mutableStateOf(false) }
 
     val cornerActionsActivity = LocalContext.current as? UnifiedActivity
@@ -2228,8 +2229,8 @@ internal fun UnifiedActivity.LibraryCarousel(
     }
 
     if (visibleInstalledApps.isEmpty()) {
-        val epicLoggedIn by EpicAuthManager.isLoggedInFlow.collectAsState()
-        val gogLoggedIn by GOGAuthManager.isLoggedInFlow.collectAsState()
+        val epicLoggedIn by EpicAuthManager.isLoggedInFlow.collectAsStateWithLifecycle()
+        val gogLoggedIn by GOGAuthManager.isLoggedInFlow.collectAsStateWithLifecycle()
         val anyLoggedIn = isLoggedIn || epicLoggedIn || gogLoggedIn
         val hasAnyCredentials =
             anyLoggedIn ||
@@ -2295,7 +2296,7 @@ internal fun UnifiedActivity.LibraryCarousel(
     val focusRequester = remember { FocusRequester() }
 
     // Observe focus index changes from the activity and request focus on the target item
-    val focusIndex by (activity?.libraryFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
+    val focusIndex by (activity?.libraryFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsStateWithLifecycle()
     LaunchedEffect(focusIndex, displayedApps.size, layoutMode) {
         if (searchQuery.isEmpty() &&
             layoutMode == LibraryLayoutMode.GRID_4 &&

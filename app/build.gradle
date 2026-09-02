@@ -255,6 +255,12 @@ dependencies {
     implementation libs.activityCompose
     implementation libs.navigationCompose
     implementation libs.lifecycleViewmodelCompose
+    // Needed for collectAsStateWithLifecycle() - pauses Flow collection when the
+    // screen isn't STARTED instead of collecting forever in the background.
+    // Not in the version catalog in this checkout: if your libs.versions.toml
+    // already pins a lifecycle version, prefer a matching alias instead of this
+    // literal coordinate.
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.8.7"
     implementation libs.composeUiTextGoogleFonts
     implementation libs.coilCompose
 

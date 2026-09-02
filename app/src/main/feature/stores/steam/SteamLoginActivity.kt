@@ -53,6 +53,7 @@ import com.winlator.cmod.shared.android.FixedFontScaleComponentActivity
 import com.winlator.cmod.shared.theme.WinNativeTheme
 import com.winlator.cmod.shared.ui.outlinedSwitchColors
 import timber.log.Timber
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 // Palette (matches Settings > Stores)
 private val BgDark = Color(0xFF141414)
@@ -99,7 +100,7 @@ class SteamLoginActivity : FixedFontScaleComponentActivity() {
     fun LoginContent(viewModel: SteamLoginViewModel) {
     SmoothScreenTransition {
 
-        val state by viewModel.loginState.collectAsState()
+        val state by viewModel.loginState.collectAsStateWithLifecycle()
         var passwordVisible by remember { mutableStateOf(false) }
 
         LaunchedEffect(state.loginResult) {

@@ -103,3 +103,15 @@
 -dontwarn androidx.window.sidecar.SidecarInterface
 -dontwarn androidx.window.sidecar.SidecarProvider
 -dontwarn androidx.window.sidecar.SidecarWindowLayoutInfo
+
+# Strip verbose/debug logging from release builds. There are 400+ Log.d/Log.v
+# call sites across the app that currently run unconditionally, including in
+# release. R8 removes the calls (and, importantly, the string-concatenation
+# work building their messages) entirely at compile time here, at zero risk
+# to debug builds since minifyEnabled is false there. Log.i/w/e are
+# deliberately left alone - LogManager's opt-in debug capture and crash
+# diagnostics depend on those still firing in release.
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+}

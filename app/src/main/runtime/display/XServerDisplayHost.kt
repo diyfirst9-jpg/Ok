@@ -57,6 +57,7 @@ import com.winlator.cmod.shared.theme.WinNativeTheme
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 const val XSERVER_DRAWER_EDGE_SWIPE_DP = 35
 
@@ -330,7 +331,7 @@ private fun XServerDisplayHost(
             }
 
             // Performance HUD: half the screen (left in landscape, top in portrait), consuming its own touches so the rest stays a trackpad. Hosted here, not a nested ComposeView.
-            val perfHudVisible by PerformanceHudState.visible.collectAsState()
+            val perfHudVisible by PerformanceHudState.visible.collectAsStateWithLifecycle()
             if (perfHudVisible) {
                 val landscape =
                     LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE

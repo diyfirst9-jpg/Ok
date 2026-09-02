@@ -207,6 +207,19 @@ private fun FrameGenerationSection(
                         onSelected = listener::onFrameGenPrecisionChanged,
                         paneScale = paneScale,
                     )
+
+                    var flowScaleLocal by remember(state.frameGenFlowScale) {
+                        mutableStateOf(state.frameGenFlowScale.coerceIn(25, 100))
+                    }
+                    DrawerSliderRow(
+                        label = stringResource(R.string.session_drawer_frame_generation_flow_scale),
+                        valueText = "$flowScaleLocal%",
+                        value = flowScaleLocal.toFloat(),
+                        valueRange = 25f..100f,
+                        steps = 0,
+                        onValueChange = { flowScaleLocal = it.roundToInt().coerceIn(25, 100) },
+                        onValueChangeFinished = { listener.onFrameGenFlowScaleChanged(flowScaleLocal) },
+                    )
                 }
             }
         }

@@ -33,6 +33,46 @@ public class Shortcut {
   private static final String COVER_ART_DIR =
       "app_data/cover_arts/"; // Removed leading "/" to keep it relative
 
+  // Cap decoded bitmap dimensions to what the UI can ever actually display.
+  // Library cards render cover art at roughly 286dp wide; 960px covers that
+  // comfortably even on 4x-density screens. Icons are only ever shown at
+  // <=64dp, so 192px is already generous headroom.
+  // Without this, a user-picked custom cover art (e.g. a phone camera photo,
+  // often 3000-4000px wide) gets decoded at FULL resolution into an
+  // ARGB_8888 bitmap - tens of MB of heap for a single thumbnail - and this
+  // happens once per shortcut, every time the library is scanned.
+  private static final int COVER_ART_MAX_DIMENSION = 960;
+  private static final int ICON_MAX_DIMENSION = 192;
+
+  // Decodes a bitmap downsampled to fit within maxDimension on its longest
+  // side, instead of decoding at native resolution and scaling later (which
+  // still pays the full-size allocation cost). Falls back to null on
+  // decode failure/OOM instead of crashing the whole shortcut load.
+  private static Bitmap decodeSampledBitmapFromFile(String path, int maxDimension) {
+    if (path == null) return null;
+    try {
+      BitmapFactory.Options boundsOptions = new BitmapFactory.Options();
+      boundsOptions.inJustDecodeBounds = true;
+      BitmapFactory.decodeFile(path, boundsOptions);
+      if (boundsOptions.outWidth <= 0 || boundsOptions.outHeight <= 0) return null;
+
+      int sampleSize = 1;
+      int halfWidth = boundsOptions.outWidth / 2;
+      int halfHeight = boundsOptions.outHeight / 2;
+      while ((halfWidth / sampleSize) >= maxDimension || (halfHeight / sampleSize) >= maxDimension) {
+        sampleSize *= 2;
+      }
+
+      BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
+      decodeOptions.inSampleSize = sampleSize;
+      decodeOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+      return BitmapFactory.decodeFile(path, decodeOptions);
+    } catch (OutOfMemoryError | Exception e) {
+      Log.w("Shortcut", "Failed to decode bitmap (" + path + "): " + e);
+      return null;
+    }
+  }
+
   public Shortcut(Container container, File file) {
     this.container = container;
     this.file = file;
@@ -68,7 +108,7 @@ public class Shortcut {
             for (File iconDir : iconDirs) {
               iconFile = new File(iconDir, value + ".png");
               if (iconFile.isFile()) {
-                icon = BitmapFactory.decodeFile(iconFile.getPath());
+                icon = decodeSampledBitmapFromFile(iconFile.getPath(), ICON_MAX_DIMENSION);
                 break;
               }
             }
@@ -147,7 +187,7 @@ public class Shortcut {
     if (customCoverArtPath != null && !customCoverArtPath.isEmpty()) {
       File customCoverArtFile = new File(customCoverArtPath);
       if (customCoverArtFile.isFile()) {
-        this.coverArt = BitmapFactory.decodeFile(customCoverArtFile.getPath());
+        this.coverArt = decodeSampledBitmapFromFile(customCoverArtFile.getPath(), COVER_ART_MAX_DIMENSION);
         return;
       }
     }
@@ -158,7 +198,7 @@ public class Shortcut {
         new File(
             container.getManager().getContext().getFilesDir(), "custom_icons/" + safeName + ".png");
     if (customIconFile.exists()) {
-      this.coverArt = BitmapFactory.decodeFile(customIconFile.getPath());
+      this.coverArt = decodeSampledBitmapFromFile(customIconFile.getPath(), COVER_ART_MAX_DIMENSION);
       this.customCoverArtPath = customIconFile.getAbsolutePath();
       return;
     }
@@ -171,7 +211,7 @@ public class Shortcut {
     if (exeFile != null && exeFile.exists()) {
       // A. Try extracting the real high-quality icon from the EXE
       if (PeIconExtractor.INSTANCE.extractAndSave(exeFile, customIconFile)) {
-        this.coverArt = BitmapFactory.decodeFile(customIconFile.getPath());
+        this.coverArt = decodeSampledBitmapFromFile(customIconFile.getPath(), COVER_ART_MAX_DIMENSION);
         this.customCoverArtPath = customIconFile.getAbsolutePath();
         putExtra("customCoverArtPath", customCoverArtPath);
         saveData(); // Save it to the file so we don't have to extract it again
@@ -182,7 +222,7 @@ public class Shortcut {
     // 4. Final Fallback: standard cover art location
     File defaultCoverArtFile = new File(COVER_ART_DIR, this.name + ".png");
     if (defaultCoverArtFile.isFile()) {
-      this.coverArt = BitmapFactory.decodeFile(defaultCoverArtFile.getPath());
+      this.coverArt = decodeSampledBitmapFromFile(defaultCoverArtFile.getPath(), COVER_ART_MAX_DIMENSION);
     }
   }
 

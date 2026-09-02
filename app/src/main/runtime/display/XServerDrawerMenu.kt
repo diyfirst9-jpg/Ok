@@ -1514,7 +1514,7 @@ fun withFrameGenState(
         frameGenEnabled = enabled,
         frameGenMultiplier = multiplier.coerceIn(2, FrameGenMultipliers.last()),
         frameGenTargetRate = targetRate.coerceAtLeast(0),
-        frameGenFlowScale = 70,
+        frameGenFlowScale = flowScale.coerceIn(25, 100),
         frameGenPrecision = if (precision == FrameGenPrecisionFP32) FrameGenPrecisionFP32 else FrameGenPrecisionFP16,
     )
 

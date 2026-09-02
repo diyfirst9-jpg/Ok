@@ -222,6 +222,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 // Epic/GOG/Steam store tabs, capsules and manager dialogs, split out of UnifiedActivity.kt (behavior-identical).
 
@@ -648,7 +649,7 @@ internal fun UnifiedActivity.EpicStoreTab(
             }
         }
     } else {
-        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
+        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsStateWithLifecycle()
         val focusRequester = remember { FocusRequester() }
         LaunchedEffect(focusIndex, displayedApps.size) {
             if (searchQuery.isEmpty() && displayedApps.isNotEmpty() && focusIndex in displayedApps.indices) {
@@ -1372,7 +1373,7 @@ internal fun UnifiedActivity.GOGStoreTab(
             }
         }
     } else {
-        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
+        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsStateWithLifecycle()
         val focusRequester = remember { FocusRequester() }
         LaunchedEffect(focusIndex, displayedApps.size) {
             if (searchQuery.isEmpty() && displayedApps.isNotEmpty() && focusIndex in displayedApps.indices) {
@@ -1942,7 +1943,7 @@ internal fun UnifiedActivity.SteamStoreTab(
             )
         }
     } else {
-        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsState()
+        val focusIndex by (activity?.storeFocusIndex ?: kotlinx.coroutines.flow.MutableStateFlow(0)).collectAsStateWithLifecycle()
         val focusRequester = remember { FocusRequester() }
         LaunchedEffect(focusIndex, displayedApps.size) {
             if (searchQuery.isEmpty() && displayedApps.isNotEmpty() && focusIndex in displayedApps.indices) {

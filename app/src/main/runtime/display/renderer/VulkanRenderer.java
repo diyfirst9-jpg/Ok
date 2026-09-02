@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Native Vulkan compositor: owns the C-side renderer handle and pushes a scene snapshot per frame. */
 public class VulkanRenderer
@@ -248,6 +249,19 @@ public class VulkanRenderer
     private final float[] effectParamsScratch = new float[MAX_EFFECTS * 4];
 
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
+
+    // Count of frames the guest has actually presented (X Present extension). This is the
+    // native frame-generation pacer's only signal for "did a new source frame arrive" — see
+    // vkr_lsfg_plan()/LsfgPacer::TrackSourceRate() in vk_renderer.c. It must be pushed to the
+    // native side every render (nativeSetSourceFrameCount, in buildAndSubmitFrame below) or
+    // the pacer's source-rate tracking never advances and frame-generation timing breaks,
+    // even though the guest app/audio keep running fine independently of this counter.
+    private final AtomicLong presentFrames = new AtomicLong();
+
+    /** Called by PresentExtension whenever the guest actually presents a new frame. */
+    public void onGuestFramePresented() {
+        presentFrames.incrementAndGet();
+    }
 
     public VulkanRenderer(XServerSurfaceView view, XServer xServer) {
         this.xServerView = view;
@@ -704,6 +718,7 @@ public class VulkanRenderer
         }
 
         nativeSetScene(handle, buf);
+        nativeSetSourceFrameCount(handle, presentFrames.get());
         // nativeSetFpsLimit is a native no-op (pacing is done elsewhere); not called per frame.
         nativeRenderFrame(handle);
 

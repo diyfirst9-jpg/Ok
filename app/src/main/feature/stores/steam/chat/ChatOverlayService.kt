@@ -132,6 +132,7 @@ import com.winlator.cmod.shared.ui.nav.PANE_DIR_RIGHT
 import com.winlator.cmod.shared.ui.nav.PANE_DIR_SECONDARY
 import com.winlator.cmod.shared.ui.nav.PANE_DIR_UP
 import com.winlator.cmod.shared.ui.nav.paneNavItem
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 private val IMG_BBCODE = Regex("\\[img\\](.*?)\\[/img\\]", RegexOption.IGNORE_CASE)
 private val IMG_SRC = Regex("\\[img\\s+src=[\"']?(.*?)[\"']?\\s*\\]", RegexOption.IGNORE_CASE)
@@ -286,8 +287,8 @@ class ChatOverlayService : Service() {
             setContent {
                 WinNativeTheme {
                     val svc = remember { SteamService.instance }
-                    val friends by svc?.friendsList?.collectAsState() ?: remember { mutableStateOf(emptyList<SteamFriendEntry>()) }
-                    val unread by svc?.unreadCounts?.collectAsState() ?: remember { mutableStateOf(emptyMap<Long, Int>()) }
+                    val friends by svc?.friendsList?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(emptyList<SteamFriendEntry>()) }
+                    val unread by svc?.unreadCounts?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(emptyMap<Long, Int>()) }
                     val head = friends.firstOrNull { it.steamId == headFriendId.longValue }
                     val alpha by animateFloatAsState(if (bubbleDimmed.value) 0.2f else 1f, label = "bubbleAlpha")
                     Box(Modifier.alpha(alpha)) {
@@ -588,9 +589,9 @@ class ChatOverlayService : Service() {
     @Composable
     private fun PanelContent() {
         val svc = remember { SteamService.instance }
-        val friends by svc?.friendsList?.collectAsState() ?: remember { mutableStateOf(emptyList<SteamFriendEntry>()) }
-        val unread by svc?.unreadCounts?.collectAsState() ?: remember { mutableStateOf(emptyMap<Long, Int>()) }
-        val recent by svc?.recentChats?.collectAsState() ?: remember { mutableStateOf(emptyMap<Long, Long>()) }
+        val friends by svc?.friendsList?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(emptyList<SteamFriendEntry>()) }
+        val unread by svc?.unreadCounts?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(emptyMap<Long, Int>()) }
+        val recent by svc?.recentChats?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(emptyMap<Long, Long>()) }
         val convId = conversationId.longValue
         val current = friends.firstOrNull { it.steamId == convId }
         val head = if (convId != 0L) current else null

@@ -232,7 +232,7 @@ internal fun UnifiedActivity.findLibraryShortcutForGame(
     isCustom: Boolean,
     isEpic: Boolean,
     epicId: Int,
-): Shortcut? = findShortcutForGame(containerManager.loadShortcuts(), app, isCustom, isEpic, epicId)
+): Shortcut? = findShortcutForGame(containerManager.getShortcutsCached(), app, isCustom, isEpic, epicId)
 
 
 internal fun UnifiedActivity.findShortcutForGame(
@@ -610,7 +610,7 @@ internal suspend fun UnifiedActivity.addGogShortcutToHomeScreen(
     artworkUrl: String?,
 ): Boolean {
     val shortcut =
-        ContainerManager(context).loadShortcuts().find {
+        ContainerManager(context).getShortcutsCached().find {
             it.getExtra("game_source") == "GOG" && it.getExtra("gog_id") == app.id
         } ?: return false
     val artworkModel = artworkUrl?.takeIf { it.isNotBlank() }

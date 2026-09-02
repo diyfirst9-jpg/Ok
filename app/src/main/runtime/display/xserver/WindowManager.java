@@ -82,6 +82,32 @@ public class WindowManager extends XResourceManager {
     return windows.get(id);
   }
 
+  /**
+   * Always-center policy for top-level application windows.
+   *
+   * Deepdrop forces every guest program window to appear centered on the actual device
+   * screen, regardless of the x/y the guest app requested. This is computed fresh every
+   * time from rootWindow's *current* width/height (which itself tracks the real, live
+   * physical screen via resizeRootWindow()/screenInfo) - never from a hardcoded constant,
+   * so it stays correct across phones/tablets with different resolutions and after
+   * orientation or window-size changes.
+   *
+   * Only applies to direct children of the root window (i.e. actual top-level app
+   * windows). Child controls/dialogs inside a window keep their own relative layout -
+   * centering those too would break every app's internal UI.
+   */
+  private short[] centeredTopLevelPosition(Window parent, short width, short height) {
+    int screenWidth = rootWindow.getWidth();
+    int screenHeight = rootWindow.getHeight();
+    short x = (short) Math.max(0, (screenWidth - width) / 2);
+    short y = (short) Math.max(0, (screenHeight - height) / 2);
+    return new short[] {x, y};
+  }
+
+  private boolean isTopLevel(Window parent) {
+    return parent != null && parent == rootWindow;
+  }
+
   public boolean resizeRootWindow(short width, short height) {
     if (width <= 0 || height <= 0) return false;
     short oldWidth = rootWindow.getWidth();
@@ -92,7 +118,23 @@ public class WindowManager extends XResourceManager {
         " -> " + width + "x" + height);
     resizeWindowForScreenChange(rootWindow, (short) 0, (short) 0, width, height);
     resizeFullscreenDescendants(rootWindow, oldWidth, oldHeight, width, height);
+    recenterTopLevelWindows();
     return true;
+  }
+
+  /**
+   * Re-centers every top-level (non-fullscreen) app window after the real screen size
+   * changes (rotation, resolution change, etc.), using the just-updated rootWindow
+   * width/height - always the live physical screen, never a fixed value.
+   */
+  private void recenterTopLevelWindows() {
+    for (Window child : new ArrayList<>(rootWindow.getChildren())) {
+      if (!child.isInputOutput()) continue;
+      short[] centered = centeredTopLevelPosition(rootWindow, child.getWidth(), child.getHeight());
+      if (child.getX() != centered[0] || child.getY() != centered[1]) {
+        resizeWindowForScreenChange(child, centered[0], centered[1], child.getWidth(), child.getHeight());
+      }
+    }
   }
 
   public List<Window> getWindows() {
@@ -221,6 +263,12 @@ public class WindowManager extends XResourceManager {
       if (depth != visual.depth) throw new BadMatch();
     }
 
+    if (isInputOutput && isTopLevel(parent)) {
+      short[] centered = centeredTopLevelPosition(parent, width, height);
+      x = centered[0];
+      y = centered[1];
+    }
+
     Drawable drawable = null;
     if (isInputOutput) {
       drawable = drawableManager.createDrawable(id, width, height, visual);
@@ -237,6 +285,12 @@ public class WindowManager extends XResourceManager {
   }
 
   private void changeWindowGeometry(Window window, short x, short y, short width, short height) {
+    if (window.isInputOutput() && isTopLevel(window.getParent())) {
+      short[] centered = centeredTopLevelPosition(window.getParent(), width, height);
+      x = centered[0];
+      y = centered[1];
+    }
+
     boolean resized = window.getWidth() != width || window.getHeight() != height;
     if (resized && window.hasEventListenerFor(Event.RESIZE_REDIRECT)) {
       window.sendEvent(Event.SUBSTRUCTURE_REDIRECT, new ResizeRequest(window, width, height));

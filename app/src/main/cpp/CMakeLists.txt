@@ -147,6 +147,21 @@ add_library(winlator SHARED
         winlator/vk/vk_dispatch.c
         winlator/vk/vk_image.c
         winlator/vk/vk_renderer.c
+        winlator/vk/lsfg/lsfg_dll.c
+        winlator/vk/lsfg/lsfg_dxbc.cpp
+        winlator/vk/lsfg/lsfg_common.cpp
+        winlator/vk/lsfg/lsfg_shaders.cpp
+        winlator/vk/lsfg/lsfg_mipmaps.cpp
+        winlator/vk/lsfg/lsfg_generate.cpp
+        winlator/vk/lsfg/lsfg_alpha.cpp
+        winlator/vk/lsfg/lsfg_beta.cpp
+        winlator/vk/lsfg/lsfg_gamma.cpp
+        winlator/vk/lsfg/lsfg_delta.cpp
+        winlator/vk/lsfg/lsfg_chain.cpp
+        winlator/vk/lsfg/lsfg_pacer.cpp
+        winlator/vk/lsfg/vkr_lsfg.cpp
+        winlator/vk/lsfg/lsfg_probe.c
+        winlator/vk/lsfg/lsfg_jni.c
 )
 
 add_dependencies(winlator winlator_shaders)

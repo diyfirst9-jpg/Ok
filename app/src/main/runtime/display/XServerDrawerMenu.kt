@@ -467,7 +467,7 @@ internal enum class HUDMetricEditor(
     BACKGROUND_ALPHA(minPercent = 10, maxPercent = 100),
 }
 
-internal enum class DrawerPane { INPUT_CONTROLS, HUD, GYROSCOPE, SCREEN_EFFECTS, RESHADE, OUTPUT, TASK_MANAGER, LOGS, TOUCH }
+internal enum class DrawerPane { INPUT_CONTROLS, HUD, FRAME_GEN, GYROSCOPE, SCREEN_EFFECTS, RESHADE, OUTPUT, TASK_MANAGER, LOGS, TOUCH }
 
 internal const val LogsPaneMaxLines = 2000
 internal const val LogsFlushIntervalMs = 200L
@@ -521,6 +521,12 @@ private val RAIL_PANES =
             labelRes = R.string.session_drawer_rail_label_hud,
         ),
         RailPaneSpec(
+            pane = DrawerPane.FRAME_GEN,
+            itemId = R.id.main_menu_frame_generation,
+            labelRes = R.string.session_drawer_rail_label_frame_gen,
+            iconOverride = Icons.Outlined.Speed,
+        ),
+        RailPaneSpec(
             pane = DrawerPane.GYROSCOPE,
             itemId = R.id.main_menu_gyroscope,
             labelRes = R.string.session_drawer_rail_label_gyro,
@@ -560,8 +566,11 @@ private const val ActionCardColumns = 3
 private val ActionCardMinHeight = 72.dp
 private val ActionCardSpacing = 8.dp
 
-private const val ActionCardRevealStaggerMs = 0
-private const val ActionCardRevealDurationMs = 0
+private const val ActionCardRevealStaggerMs = 28
+private const val ActionCardRevealDurationMs = 220
+
+internal val FrameGenMultipliers = listOf(2, 3, 4)
+internal val FrameGenTargetRates = listOf(60, 90, 120, 144, 165)
 
 data class XServerDrawerItem(
     val itemId: Int,
@@ -608,6 +617,12 @@ data class XServerDrawerState(
     val gyroscopeCardExpanded: Boolean = false,
     val fpsLimit: Int = 0,
     val maxRefreshRate: Int = 60,
+    val frameGenAvailable: Boolean = false,
+    val frameGenEnabled: Boolean = false,
+    val frameGenMultiplier: Int = 2,
+    val frameGenTargetRate: Int = 0,
+    val frameGenFlowScale: Int = 70,
+    val frameGenPrecision: Int = FrameGenPrecisionFP16,
     val screenEffectsCardExpanded: Boolean = false,
     val sgsrEnabled: Boolean = false,
     val sgsrSharpness: Int = 100,
@@ -1014,6 +1029,15 @@ interface XServerDrawerActionListener {
     fun onGyroscopeCardExpandedChanged(expanded: Boolean)
 
     fun onFPSLimitChanged(limit: Int)
+
+    fun onFrameGenEnabledChanged(enabled: Boolean)
+
+    fun onFrameGenMultiplierSelected(multiplier: Int)
+
+    fun onFrameGenTargetRateSelected(rate: Int)
+
+    fun onFrameGenFlowScaleChanged(percent: Int)
+    fun onFrameGenPrecisionChanged(precision: Int)
 
     fun onScreenEffectsCardExpandedChanged(expanded: Boolean)
 
@@ -1452,6 +1476,34 @@ fun setupXServerDrawerComposeView(
     }
 }
 
+fun withFrameGenState(
+    state: XServerDrawerState,
+    available: Boolean,
+    enabled: Boolean,
+    multiplier: Int,
+    targetRate: Int,
+    flowScale: Int,
+    frameGenTitle: String,
+    precision: Int = FrameGenPrecisionFP16,
+): XServerDrawerState =
+    state.copy(
+        items =
+            state.items +
+                XServerDrawerItem(
+                    itemId = R.id.main_menu_frame_generation,
+                    title = frameGenTitle,
+                    subtitle = "",
+                    icon = Icons.Outlined.Speed,
+                    active = enabled || state.fpsLimit > 0,
+                ),
+        frameGenAvailable = available,
+        frameGenEnabled = enabled,
+        frameGenMultiplier = multiplier.coerceIn(2, FrameGenMultipliers.last()),
+        frameGenTargetRate = targetRate.coerceAtLeast(0),
+        frameGenFlowScale = 70,
+        frameGenPrecision = if (precision == FrameGenPrecisionFP32) FrameGenPrecisionFP32 else FrameGenPrecisionFP16,
+    )
+
 // Append the always-present "Output" tab item and its state to the drawer state.
 fun withOutputState(
     state: XServerDrawerState,
@@ -1646,15 +1698,15 @@ internal fun XServerDrawerContent(
                                     (
                                         slideInVertically(
                                             initialOffsetY = { it / 3 },
-                                            animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing),
-                                        ) + fadeIn(animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing))
-                                    ) togetherWith fadeOut(animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing)) using
+                                            animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing),
+                                        ) + fadeIn(animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing))
+                                    ) togetherWith fadeOut(animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing)) using
                                         SizeTransform(clip = false)
                                 } else if (returningToMenu) {
                                     EnterTransition.None togetherWith ExitTransition.None
                                 } else {
-                                    fadeIn(animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing)) togetherWith
-                                        fadeOut(animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing))
+                                    fadeIn(animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing)) togetherWith
+                                        fadeOut(animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing))
                                 }
                             },
                             label = "drawerBody",
@@ -1663,6 +1715,7 @@ internal fun XServerDrawerContent(
                             when (pane) {
                                 DrawerPane.INPUT_CONTROLS -> InputControlsPaneContent(state = state, listener = listener)
                                 DrawerPane.HUD -> HUDPaneContent(state = state, listener = listener)
+                                DrawerPane.FRAME_GEN -> FrameGenPaneContent(state = state, listener = listener)
                                 DrawerPane.GYROSCOPE -> GyroscopePaneContent(state = state, listener = listener)
                                 DrawerPane.TOUCH -> TouchPaneContent(state = state, listener = listener, onClose = { onOpenPaneChange(null) })
                                 DrawerPane.SCREEN_EFFECTS -> ScreenEffectsPaneContent(state = state, listener = listener)

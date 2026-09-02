@@ -559,6 +559,24 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
         state.surfaceEffectEntries.value = surfaceEffectArr
         state.selectedSurfaceEffect.intValue = if (c?.getExtra("swapRB", "0") == "1") 1 else 0
 
+        state.frameGenEnabled.value = c?.getExtra("frameGen", "0") == "1"
+        state.frameGenMultiplier.intValue =
+            c?.getExtra("frameGenMultiplier", "2")?.toIntOrNull()?.coerceIn(2, 4) ?: 2
+        state.frameGenTargetRate.intValue =
+            c?.getExtra("frameGenTargetRate", "0")?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+        state.frameGenFlowScale.intValue = 70
+        state.frameGenPrecision.intValue =
+            c?.getExtra("frameGenPrecision", "1")?.toIntOrNull()?.takeIf { it == 1 || it == 2 } ?: 1
+
+        state.netDriverEntries.value = listOf(
+            context.getString(R.string.networking_driver_winnative),
+            context.getString(R.string.networking_driver_none)
+        )
+        state.selectedNetDriver.intValue =
+            if (NetworkingSettings.driverOrDefault(c?.getExtra(NetworkingSettings.EXTRA_DRIVER, NetworkingSettings.DEFAULT_DRIVER)) == NetworkingSettings.DRIVER_NONE) 1 else 0
+        state.netMac.value = c?.getExtra(NetworkingSettings.EXTRA_MAC, "") ?: ""
+        state.netMacAuto.value = NetworkingSettings.automaticMac(context)
+
         // init() migrates a legacy single reshadeEffect / flat reshadeParams into the loadout model
         val reshadeEffects = com.winlator.cmod.runtime.reshade.ReshadeManager.scanEffects(context)
         state.reshadeEffects.value = reshadeEffects
@@ -840,6 +858,8 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
             c.setDXWrapperConfig(dxwrapperConfig)
             c.putExtra("swapRB", if (state.selectedSurfaceEffect.intValue == 1) "1" else "0")
             c.putExtra("refreshRate", getRefreshRateFromState())
+            writeFrameGenExtras(c)
+            writeNetworkingExtras(c)
             run {
                 // reshadeEffect stays coherent (= first effect) for legacy readers; all null when empty
                 val loadoutJson = state.reshadeLoadout.loadoutJsonOrNull()
@@ -925,13 +945,14 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
 
                 ContainerCreation.createContainerAsync(manager, contentsManager, data) { newContainer ->
                     if (newContainer != null) {
-                        saveWindowsVersion(newContainer)
                         // Container.loadData() ignores unknown top-level keys, so extras must be set post-creation.
                         newContainer.putExtra(
                             "swapRB",
                             if (state.selectedSurfaceEffect.intValue == 1) "1" else "0"
                         )
                         getRefreshRateFromState()?.let { newContainer.putExtra("refreshRate", it) }
+                        writeFrameGenExtras(newContainer)
+                        writeNetworkingExtras(newContainer)
                         newContainer.setZinkMode(if (state.selectedZinkMode.intValue == 1) "windows" else "unix")
                         newContainer.saveData()
                         saveMouseWarpOverride(newContainer)
@@ -1022,6 +1043,22 @@ class ContainerSettingsComposeDialog @JvmOverloads constructor(
         return installedProfiles.firstOrNull()
             ?.let(ContentsManager::getEntryName)
             ?: WineInfo.MAIN_WINE_VERSION.identifier()
+    }
+
+    private fun writeFrameGenExtras(c: Container) {
+        c.putExtra("frameGen", if (state.frameGenEnabled.value) "1" else "0")
+        c.putExtra("frameGenMultiplier", state.frameGenMultiplier.intValue.coerceIn(2, 4).toString())
+        c.putExtra("frameGenTargetRate", state.frameGenTargetRate.intValue.coerceAtLeast(0).toString())
+        c.putExtra("frameGenFlowScale", "70")
+        c.putExtra("frameGenPrecision", state.frameGenPrecision.intValue.coerceIn(1, 2).toString())
+    }
+
+    private fun writeNetworkingExtras(c: Container) {
+        c.putExtra(
+            NetworkingSettings.EXTRA_DRIVER,
+            if (state.selectedNetDriver.intValue == 1) NetworkingSettings.DRIVER_NONE else NetworkingSettings.DRIVER_WINNATIVE
+        )
+        c.putExtra(NetworkingSettings.EXTRA_MAC, NetworkingSettings.normalizeMac(state.netMac.value))
     }
 
     private fun saveMouseWarpOverride(c: Container) {

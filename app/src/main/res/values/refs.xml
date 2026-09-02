@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <item type="id" name="FLXServerDisplay" />
     <item type="id" name="main_menu_stores" />
@@ -31,4 +31,5 @@
     <item type="id" name="main_menu_magnifier" />
     <item type="id" name="main_menu_logs" />
     <item type="id" name="main_menu_exit" />
-</resources>
+<item type="id" name="main_menu_frame_generation" />
+    </resources>

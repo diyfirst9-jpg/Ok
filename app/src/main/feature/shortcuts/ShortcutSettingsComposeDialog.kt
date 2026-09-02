@@ -520,6 +520,40 @@ class ShortcutSettingsComposeDialog private constructor(
                 ?.coerceIn(0, 100)
                 ?: 100
 
+        state.netDriverEntries.value = listOf(
+            context.getString(R.string.networking_driver_winnative),
+            context.getString(R.string.networking_driver_none)
+        )
+        state.selectedNetDriver.intValue =
+            if (NetworkingSettings.driverOrDefault(
+                    getShortcutSetting(
+                        NetworkingSettings.EXTRA_DRIVER,
+                        container.getExtra(NetworkingSettings.EXTRA_DRIVER, NetworkingSettings.DEFAULT_DRIVER)
+                    )
+                ) == NetworkingSettings.DRIVER_NONE) 1 else 0
+        state.netMac.value =
+            getShortcutSetting(NetworkingSettings.EXTRA_MAC, container.getExtra(NetworkingSettings.EXTRA_MAC, ""))
+        state.netMacAuto.value = NetworkingSettings.automaticMac(context)
+
+        state.frameGenEnabled.value =
+            getShortcutSetting("frameGen", container.getExtra("frameGen", "0")) == "1"
+        state.frameGenMultiplier.intValue =
+            getShortcutSetting("frameGenMultiplier", container.getExtra("frameGenMultiplier", "2"))
+                .toIntOrNull()
+                ?.coerceIn(2, 4)
+                ?: 2
+        state.frameGenTargetRate.intValue =
+            getShortcutSetting("frameGenTargetRate", container.getExtra("frameGenTargetRate", "0"))
+                .toIntOrNull()
+                ?.coerceAtLeast(0)
+                ?: 0
+        state.frameGenFlowScale.intValue = 70
+        state.frameGenPrecision.intValue =
+            getShortcutSetting("frameGenPrecision", container.getExtra("frameGenPrecision", "1"))
+                .toIntOrNull()
+                ?.takeIf { it == 1 || it == 2 }
+                ?: 1
+
         // shortcut override else container value; legacy single reshadeEffect/flat params migrated in parse
         val reshadeEffects = com.winlator.cmod.runtime.reshade.ReshadeManager.scanEffects(context)
         state.reshadeEffects.value = reshadeEffects
@@ -1301,6 +1335,42 @@ class ShortcutSettingsComposeDialog private constructor(
                 shortcut.putExtra("sgsrUpscaleMode", null)
                 shortcut.putExtra("sgsrSharpness", null)
             }
+
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                NetworkingSettings.EXTRA_DRIVER,
+                if (state.selectedNetDriver.intValue == 1) NetworkingSettings.DRIVER_NONE else NetworkingSettings.DRIVER_WINNATIVE,
+                NetworkingSettings.driverOrDefault(container.getExtra(NetworkingSettings.EXTRA_DRIVER, NetworkingSettings.DEFAULT_DRIVER)),
+            )
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                NetworkingSettings.EXTRA_MAC,
+                NetworkingSettings.normalizeMac(state.netMac.value),
+                NetworkingSettings.normalizeMac(container.getExtra(NetworkingSettings.EXTRA_MAC, "")),
+            )
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                "frameGen",
+                if (state.frameGenEnabled.value) "1" else "0",
+                container.getExtra("frameGen", "0"),
+            )
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                "frameGenMultiplier",
+                state.frameGenMultiplier.intValue.coerceIn(2, 4).toString(),
+                container.getExtra("frameGenMultiplier", "2"),
+            )
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                "frameGenTargetRate",
+                state.frameGenTargetRate.intValue.coerceAtLeast(0).toString(),
+                container.getExtra("frameGenTargetRate", "0"),
+            )
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                "frameGenFlowScale",
+                state.frameGenFlowScale.intValue.coerceIn(25, 100).toString(),
+                container.getExtra("frameGenFlowScale", "70"),
+            )
+            hasContainerOverride = hasContainerOverride or saveOverride(
+                "frameGenPrecision",
+                state.frameGenPrecision.intValue.coerceIn(1, 2).toString(),
+                container.getExtra("frameGenPrecision", "1"),
+            )
 
             // saveOverride not putExtra: putExtra leaves hasContainerOverride false, so a reshade-only shortcut gets use_container_defaults=1 and reads back the container's extras
             run {

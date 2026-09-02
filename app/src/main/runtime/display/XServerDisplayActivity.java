@@ -976,6 +976,27 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
         }
     }
 
+    // Reconstructed: definition was missing from the checkout, inferred from the call site
+    // comment ("cap the CPU cores ... to ~80% of what was resolved above") and cpuList's
+    // established comma-separated-core-index format (see Container.getFallbackCPUList /
+    // ProcessHelper.getAffinityMask). Returns null when no capping is needed/possible so the
+    // caller can leave the original list untouched.
+    private static String capCpuListForPowerSave(String cpuList) {
+        if (cpuList == null || cpuList.isEmpty()) return null;
+        String[] parts = cpuList.split(",");
+        java.util.ArrayList<String> cores = new java.util.ArrayList<>();
+        for (String part : parts) {
+            String v = part.trim();
+            if (!v.isEmpty()) cores.add(v);
+        }
+        int total = cores.size();
+        if (total <= 1) return null;
+        int capped = (int) Math.floor(total * 0.8);
+        if (capped < 1) capped = 1;
+        if (capped >= total) return null;
+        return String.join(",", cores.subList(0, capped));
+    }
+
     // paramsJson is nested {"<effect>":{uniform:value}} when nested, else the flat legacy map
     private static class ResolvedReshade {
         java.util.List<com.winlator.cmod.runtime.reshade.ReshadeLoadout.Entry> loadout;

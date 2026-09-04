@@ -206,40 +206,6 @@ internal fun ScreenEffectsPaneContent(
                         .padding(horizontal = (12f * paneScale).dp, vertical = (12f * paneScale).dp),
                 verticalArrangement = Arrangement.spacedBy((10f * paneScale).dp),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy((8f * paneScale).dp)) {
-                    PaneSectionLabel(stringResource(R.string.shortcuts_graphics_sgsr_full_title))
-                    NavBooleanRow(
-                        title = stringResource(R.string.session_drawer_upscaler_fsr),
-                        checked = state.sgsrEnabled,
-                        onCheckedChange = listener::onSGSREnabledChanged,
-                    )
-
-                    AnimatedVisibility(
-                        visible = state.sgsrEnabled,
-                        enter =
-                            expandVertically(
-                                animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing),
-                                expandFrom = Alignment.Top,
-                            ) + fadeIn(animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing)),
-                        exit =
-                            shrinkVertically(
-                                animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing),
-                                shrinkTowards = Alignment.Top,
-                            ) + fadeOut(animationSpec = tween(durationMillis = 0, easing = FastOutSlowInEasing)),
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy((8f * paneScale).dp)) {
-                            NavSliderRow(
-                                label = stringResource(R.string.session_drawer_sgsr_edge_sharpness),
-                                valueText = "${state.sgsrSharpness}%",
-                                value = state.sgsrSharpness.toFloat(),
-                                valueRange = 0f..100f,
-                                steps = 99,
-                                onValueChange = { listener.onSGSRSharpnessChanged(it.roundToInt().coerceIn(0, 100)) },
-                            )
-                        }
-                    }
-                }
-
                 ThinDivider()
 
                 Column(verticalArrangement = Arrangement.spacedBy((8f * paneScale).dp)) {

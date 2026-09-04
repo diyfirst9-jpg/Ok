@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import com.winlator.cmod.runtime.display.renderer.ViewTransformation;
 import com.winlator.cmod.runtime.display.renderer.VulkanRenderer;
 import com.winlator.cmod.runtime.display.ui.XServerSurfaceView;
 
@@ -83,7 +82,7 @@ public final class ExternalDisplayController {
     private boolean gameMode = true;      // request HDMI ALLM when the sink supports it
     private String lastModesSignature = ""; // detects EDID re-advertisement (e.g. glasses unlocking 120Hz)
 
-    private int fillMode = ViewTransformation.FILL_MODE_FIT;
+    private int fillMode = VulkanRenderer.FILL_MODE_FIT;
     private int savedPresentMode = VulkanRenderer.PRESENT_MODE_FIFO;
     private float savedPhoneRefreshRate = 0f;
 
@@ -311,7 +310,7 @@ public final class ExternalDisplayController {
 
         swapActive = true;
         renderActive = false;
-        fillMode = ViewTransformation.FILL_MODE_FIT;
+        fillMode = VulkanRenderer.FILL_MODE_FIT;
         rebuildModeTables();
         applyFillModeToRenderer();
         applyGameMode();
@@ -333,11 +332,11 @@ public final class ExternalDisplayController {
         panelScalerLocked = false;
 
         // Clear any render buffer so the phone surface follows the phone layout again.
-        fillMode = ViewTransformation.FILL_MODE_FIT;
+        fillMode = VulkanRenderer.FILL_MODE_FIT;
         VulkanRenderer renderer = gameView.getRenderer();
         try { gameView.getHolder().setSizeFromLayout(); } catch (Exception ignore) {}
         if (renderer != null) {
-            renderer.setFillModeQuiet(ViewTransformation.FILL_MODE_FIT);
+            renderer.setFillModeQuiet(VulkanRenderer.FILL_MODE_FIT);
             renderer.invalidateSurfaceSize();
         }
         restorePhoneRefresh();
@@ -789,8 +788,11 @@ public final class ExternalDisplayController {
         return fillMode;
     }
 
+    // The FIT/STRETCH/ZOOM picker was removed with the rest of that system - only FIT
+    // (letterbox) exists now, so this always coerces back to FIT regardless of what
+    // the (now-dead) menu entry passes in.
     public void selectFillMode(int mode) {
-        fillMode = mode;
+        fillMode = VulkanRenderer.FILL_MODE_FIT;
         applyFillModeToRenderer();
     }
 

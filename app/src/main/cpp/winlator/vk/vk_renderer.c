@@ -45,7 +45,6 @@
 #include "shaders/effect_scanlines_frag.spv.h"
 #include "shaders/effect_colorblind_frag.spv.h"
 #include "shaders/effect_pixelate_frag.spv.h"
-#include "shaders/sgsr1_frag.spv.h"
 
 // ============================================================
 // Forward decls
@@ -65,8 +64,6 @@ static void destroy_swapchain_resources(VkRenderer* r);
 static void destroy_swapchain(VkRenderer* r);
 static bool create_offscreen(VkRenderer* r, uint32_t w, uint32_t h, bool need_second);
 static void destroy_offscreen(VkRenderer* r);
-static bool create_sgsr1_resources(VkRenderer* r, uint32_t w, uint32_t h);
-static void destroy_sgsr1_resources(VkRenderer* r);
 static void destroy_composite_targets(VkRenderer* r);
 static bool create_composite_targets(VkRenderer* r, uint32_t w, uint32_t h, uint32_t count);
 static bool composite_format_supported(VkRenderer* r);
@@ -971,13 +968,11 @@ static bool create_pipelines(VkRenderer* r) {
     VkShaderModule fs_scanlines = load_shader_module(r, effect_scanlines_frag, effect_scanlines_frag_size);
     VkShaderModule fs_colorblind = load_shader_module(r, effect_colorblind_frag, effect_colorblind_frag_size);
     VkShaderModule fs_pixelate = load_shader_module(r, effect_pixelate_frag, effect_pixelate_frag_size);
-    VkShaderModule fs_sgsr1 = load_shader_module(r, sgsr1_frag, sgsr1_frag_size);
     if (!vs_window || !fs_window || !fs_cursor || !vs_quad || !fs_blit
         || !fs_crt || !fs_vivid || !fs_hdr || !fs_natural
         || !fs_toon || !fs_ntsc || !fs_ntsc2 || !fs_coloradj
         || !fs_colorgrade || !fs_sharpen || !fs_scanlines
-        || !fs_colorblind || !fs_pixelate
-        || !fs_sgsr1) {
+        || !fs_colorblind || !fs_pixelate) {
         return false;
     }
 
@@ -1001,9 +996,6 @@ static bool create_pipelines(VkRenderer* r) {
         false, false, NULL);
     r->pipelines.effect_pipelines[VK_EFFECT_NATURAL] = create_graphics_pipeline(
         r, vs_quad, fs_natural, r->pipelines.effect_layout, r->pipelines.swapchain_pass,
-        false, false, NULL);
-    r->pipelines.effect_pipelines[VK_EFFECT_SGSR1] = create_graphics_pipeline(
-        r, vs_quad, fs_sgsr1, r->pipelines.effect_layout, r->pipelines.swapchain_pass,
         false, false, NULL);
     r->pipelines.effect_pipelines[VK_EFFECT_TOON] = create_graphics_pipeline(
         r, vs_quad, fs_toon, r->pipelines.effect_layout, r->pipelines.swapchain_pass,
@@ -1053,9 +1045,6 @@ static bool create_pipelines(VkRenderer* r) {
     r->pipelines.offscreen_effect_pipelines[VK_EFFECT_NATURAL] = create_graphics_pipeline(
         r, vs_quad, fs_natural, r->pipelines.effect_layout, r->pipelines.offscreen_pass,
         false, false, NULL);
-    r->pipelines.offscreen_effect_pipelines[VK_EFFECT_SGSR1] = create_graphics_pipeline(
-        r, vs_quad, fs_sgsr1, r->pipelines.effect_layout, r->pipelines.offscreen_pass,
-        false, false, NULL);
     r->pipelines.offscreen_effect_pipelines[VK_EFFECT_TOON] = create_graphics_pipeline(
         r, vs_quad, fs_toon, r->pipelines.effect_layout, r->pipelines.offscreen_pass,
         false, false, NULL);
@@ -1102,7 +1091,6 @@ static bool create_pipelines(VkRenderer* r) {
     vkDestroyShaderModule(r->device, fs_scanlines, NULL);
     vkDestroyShaderModule(r->device, fs_colorblind, NULL);
     vkDestroyShaderModule(r->device, fs_pixelate, NULL);
-    vkDestroyShaderModule(r->device, fs_sgsr1, NULL);
 
     if (!r->pipelines.window_pipeline || !r->pipelines.cursor_pipeline
         || !r->pipelines.blit_pipeline
@@ -1964,7 +1952,6 @@ static void framegen_rebuild_swapchain(VkRenderer* r) {
     if (r->device) vkDeviceWaitIdle(r->device);
     uint32_t fw = r->surface_extent.width;
     uint32_t fh = r->surface_extent.height;
-    destroy_sgsr1_resources(r);
     destroy_offscreen(r);
     destroy_swapchain(r);
     if (!create_swapchain(r, fw, fh)) {
@@ -2022,34 +2009,6 @@ static bool composite_format_supported(VkRenderer* r) {
                                         | VK_FORMAT_FEATURE_BLIT_SRC_BIT
                                         | VK_FORMAT_FEATURE_BLIT_DST_BIT;
     return (props.optimalTilingFeatures & required) == required;
-}
-
-static bool create_sgsr1_resources(VkRenderer* r, uint32_t w, uint32_t h) {
-    if (r->sgsr1.built && r->sgsr1.width == w && r->sgsr1.height == h) return true;
-
-    destroy_sgsr1_resources(r);
-    if (!create_one_offscreen(r, &r->sgsr1.source, w, h, VK_FILTER_LINEAR)) goto fail;
-
-    r->sgsr1.width = w;
-    r->sgsr1.height = h;
-    r->sgsr1.built = true;
-    VK_LOGI("SGSR1 source created %ux%u -> swapchain %ux%u",
-            w, h, r->swapchain_extent.width, r->swapchain_extent.height);
-    return true;
-
-fail:
-    destroy_sgsr1_resources(r);
-    return false;
-}
-
-static void destroy_sgsr1_resources(VkRenderer* r) {
-    if (r->sgsr1.built) {
-        VK_LOGI("SGSR1 source destroyed");
-    }
-    destroy_one_offscreen(r, &r->sgsr1.source);
-    r->sgsr1.built = false;
-    r->sgsr1.width = 0;
-    r->sgsr1.height = 0;
 }
 
 // ============================================================
@@ -2324,84 +2283,6 @@ static void set_viewport_scissor(VkCommandBuffer cmd, VkRenderer* r, const VkSce
 // The previous scene is updated with RAW coordinates after repair. Therefore a stale client
 // that remains unchanged for many frames receives the frame delta once per actual frame move,
 // rather than accumulating the same delta repeatedly.
-static bool reparent_rect_contains_center(int32_t rx, int32_t ry, uint32_t rw, uint32_t rh,
-                                           int32_t px, int32_t py, uint32_t pw, uint32_t ph) {
-    int64_t cx = (int64_t)px + (int64_t)pw / 2;
-    int64_t cy = (int64_t)py + (int64_t)ph / 2;
-    return cx >= rx && cy >= ry
-        && cx < (int64_t)rx + (int64_t)rw
-        && cy < (int64_t)ry + (int64_t)rh;
-}
-
-static uint64_t reparent_rect_area(uint32_t w, uint32_t h) {
-    return (uint64_t)w * (uint64_t)h;
-}
-
-static void repair_reparented_client_windows(VkRenderer* r, VkScene* s) {
-    if (!r || !s || s->window_count == 0) return;
-
-    if (r->reparent_prev_valid) {
-        const VkScene* prev = &r->reparent_prev_scene;
-        uint32_t prev_count = prev->window_count;
-        if (prev_count > VK_MAX_RENDERABLE_WINDOWS) prev_count = VK_MAX_RENDERABLE_WINDOWS;
-
-        for (uint32_t fi = 0; fi < s->window_count; fi++) {
-            VkRenderableWindow* frame = &s->windows[fi];
-            if (!frame->texture || !frame->width || !frame->height) continue;
-            if (fi >= prev_count) continue;
-
-            const VkRenderableWindow* old_frame = &prev->windows[fi];
-            if (old_frame->texture != frame->texture) continue;
-
-            int32_t dx = frame->x - old_frame->x;
-            int32_t dy = frame->y - old_frame->y;
-            if (dx == 0 && dy == 0) continue;
-
-            uint64_t frame_area = reparent_rect_area(frame->width, frame->height);
-            if (frame_area < 64ULL * 64ULL) continue;
-
-            for (uint32_t ci = 0; ci < s->window_count; ci++) {
-                if (ci == fi || ci >= prev_count) continue;
-
-                VkRenderableWindow* client = &s->windows[ci];
-                const VkRenderableWindow* old_client = &prev->windows[ci];
-                if (!client->texture || !client->width || !client->height) continue;
-                if (old_client->texture != client->texture) continue;
-
-                // The candidate did not move in the raw scene. This is the signature of a
-                // reparented sibling whose frame moved independently.
-                if (client->x != old_client->x || client->y != old_client->y
-                    || client->width != old_client->width
-                    || client->height != old_client->height) continue;
-
-                if (!reparent_rect_contains_center(old_frame->x, old_frame->y,
-                                                   old_frame->width, old_frame->height,
-                                                   old_client->x, old_client->y,
-                                                   old_client->width, old_client->height)) continue;
-
-                // If the stale client is still inside the new frame there is no visible split.
-                if (reparent_rect_contains_center(frame->x, frame->y,
-                                                   frame->width, frame->height,
-                                                   client->x, client->y,
-                                                   client->width, client->height)) continue;
-
-                uint64_t client_area = reparent_rect_area(client->width, client->height);
-                if (client_area > frame_area) continue;
-
-                client->x += dx;
-                client->y += dy;
-                VK_LOGI("Wine reparent sync: frame[%u] delta=%d,%d -> client[%u] %d,%d",
-                        fi, dx, dy, ci, client->x, client->y);
-            }
-        }
-    }
-
-    // Store RAW incoming geometry as the next baseline. Do not store repaired coordinates;
-    // otherwise a client that is still stale in the X11 scene could be moved repeatedly.
-    r->reparent_prev_scene = *s;
-    r->reparent_prev_valid = true;
-}
-
 static void draw_scene_pass(VkRenderer* r, VkCommandBuffer cmd, const VkScene* s, bool offscreen,
                             uint32_t target_w, uint32_t target_h) {
     if (s->screen_width == 0 || s->screen_height == 0) return;
@@ -2493,10 +2374,6 @@ static void run_effect(VkRenderer* r, VkCommandBuffer cmd, VkEffectSlot* eff,
     vkCmdDraw(cmd, 3, 1, 0, 0);
 }
 
-static bool scene_starts_with_sgsr1(const VkScene* s) {
-    return s->effect_count > 0 && s->effects[0].type == VK_EFFECT_SGSR1;
-}
-
 // Select the actual Game Rect, not the fullscreen desktop/background layer.
 //
 // The old implementation used only "largest ready window". That is incorrect for an X11
@@ -2516,6 +2393,23 @@ static bool scene_starts_with_sgsr1(const VkScene* s) {
 // replacement, so both paths always target the same Game Rect.
 static int32_t find_game_window(const VkScene* s) {
     if (!s || s->window_count == 0) return -1;
+
+    // Java already resolved the game/source Window from the authoritative X11 tree.
+    // Prefer that stable resource id over geometry/array order. This is essential for Wine
+    // + DXVK where a top-level frame and its client can both have valid textures and their
+    // ordering can change during reparent/Z-order operations.
+    if (s->source_window_id != 0) {
+        for (uint32_t i = 0; i < s->window_count; i++) {
+            const VkRenderableWindow* w = &s->windows[i];
+            if (w->window_id == s->source_window_id && w->texture && w->texture->ready
+                && w->width > 0 && w->height > 0) {
+                VK_LOGI("Game Rect identity match: windowId=%d idx=%u rect=%d,%d %ux%u tex=%ux%u",
+                        s->source_window_id, i, w->x, w->y, w->width, w->height,
+                        w->texture->width, w->texture->height);
+                return (int32_t)i;
+            }
+        }
+    }
 
     const uint32_t sw = s->screen_width;
     const uint32_t sh = s->screen_height;
@@ -2570,12 +2464,6 @@ static int32_t find_game_window(const VkScene* s) {
         if (have_non_desktop && desktop_like) continue;
 
         double score = 0.0;
-
-        // SceneSync's stable window identity is the strongest possible pairing signal. This
-        // prevents two same-sized windows (or a recycled X11 handle) from being interchanged.
-        if (s->sync_source_window_id != 0 && w->sync_id == s->sync_source_window_id) {
-            score += 10000.0;
-        }
 
         // Texture-to-rect aspect agreement is a strong signal for a real game surface.
         const double aspect_error = fabs(rect_aspect - tex_aspect) /
@@ -2654,30 +2542,6 @@ static void wait_inflight_frames(VkRenderer* r) {
     vkWaitForFences(r->device, count, fences, VK_TRUE, UINT64_MAX);
 }
 
-// SGSR1 upscales the actual X/DRI3 source; ratio changes take effect after restart.
-static VkExtent2D compute_sgsr1_source_extent(VkRenderer* r, const VkScene* s) {
-    VkExtent2D out = r->swapchain_extent;
-    if (out.width == 0 || out.height == 0 || s->screen_width == 0 || s->screen_height == 0) {
-        return out;
-    }
-
-    // Cap SGSR1's source at the X screen so oversized DRI3 buffers do not undo scaling.
-    uint32_t source_w = s->source_width > 0 && s->source_width < s->screen_width
-        ? s->source_width : s->screen_width;
-    uint32_t source_h = s->source_height > 0 && s->source_height < s->screen_height
-        ? s->source_height : s->screen_height;
-    transformed_view_size(&source_w, &source_h, r->swapchain_transform);
-    if (source_w == 0 || source_h == 0) return out;
-
-    VkExtent2D source = {
-        source_w < out.width ? source_w : out.width,
-        source_h < out.height ? source_h : out.height,
-    };
-    if (source.width < 1) source.width = 1;
-    if (source.height < 1) source.height = 1;
-    return source;
-}
-
 static uint64_t vkr_monotonic_ns(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -2726,22 +2590,15 @@ static bool record_and_submit_frame(VkRenderer* r) {
     pthread_mutex_unlock(&r->scene_mutex);
     destroy_graveyard_textures(r, dead, dead_count);
 
-    bool wants_sgsr1 = scene_starts_with_sgsr1(&snap);
-    bool needs_fullres_offscreen = snap.effect_count > 0
-        && (!wants_sgsr1 || snap.effect_count > 1);
-    // offscreen[1] is reached only once the chain writes two distinct offscreen buffers: the
-    // effect loop's dst_idx starts at 1 for a non-SGSR chain but at 0 for an SGSR1-led one
-    // (scene goes to the separate SGSR source), so the threshold is >1 normally, >2 for SGSR.
+    bool needs_fullres_offscreen = snap.effect_count > 0;
+    // offscreen[1] is reached only once the chain writes two distinct offscreen buffers.
     bool needs_second_offscreen = needs_fullres_offscreen
-        && snap.effect_count > (wants_sgsr1 ? 2u : 1u);
-    VkExtent2D sgsr1_source_extent = wants_sgsr1
-        ? compute_sgsr1_source_extent(r, &snap)
-        : r->swapchain_extent;
+        && snap.effect_count > 1u;
 
-    // Full-res ping-pong targets exist only when the chain needs them (SGSR-only writes its
-    // low-res source straight to the swapchain). offscreen[1] is grown/freed lazily as the
-    // chain crosses the threshold above; effect counts change on user action, not per frame,
-    // so this doesn't thrash. Safe under render_mutex (no concurrent swapchain teardown).
+    // Full-res ping-pong targets exist only when the chain needs them. offscreen[1] is
+    // grown/freed lazily as the chain crosses the threshold above; effect counts change on
+    // user action, not per frame, so this doesn't thrash. Safe under render_mutex (no
+    // concurrent swapchain teardown).
     bool offscreen_dims_stale = !r->offscreen_built
         || r->offscreen[0].width != r->swapchain_extent.width
         || r->offscreen[0].height != r->swapchain_extent.height;
@@ -2758,21 +2615,6 @@ static bool record_and_submit_frame(VkRenderer* r) {
     } else if (r->offscreen_built) {
         wait_inflight_frames(r);
         destroy_offscreen(r);
-    }
-    // Only rebuild SGSR1 source on meaningful dim change. Tiny pixmap-size flicker (off-by-
-    // one DRI3 jitter, transient resizes) used to thrash this allocation every frame and
-    // stall the render thread on the full-device wait that preceded it.
-    int sgsr1_dw = (int)r->sgsr1.width  - (int)sgsr1_source_extent.width;
-    int sgsr1_dh = (int)r->sgsr1.height - (int)sgsr1_source_extent.height;
-    if (sgsr1_dw < 0) sgsr1_dw = -sgsr1_dw;
-    if (sgsr1_dh < 0) sgsr1_dh = -sgsr1_dh;
-    bool sgsr1_dim_changed = r->sgsr1.built && (sgsr1_dw > 4 || sgsr1_dh > 4);
-    if (wants_sgsr1 && (!r->sgsr1.built || sgsr1_dim_changed)) {
-        wait_inflight_frames(r);
-        create_sgsr1_resources(r, sgsr1_source_extent.width, sgsr1_source_extent.height);
-    } else if (!wants_sgsr1 && r->sgsr1.built) {
-        wait_inflight_frames(r);
-        destroy_sgsr1_resources(r);
     }
 
     bool via_composite = r->framegen_requested && r->framegen_supported
@@ -2795,32 +2637,6 @@ static bool record_and_submit_frame(VkRenderer* r) {
     }
     uint32_t fg_width  = game_w ? game_w->texture->width  : 0;
     uint32_t fg_height = game_w ? game_w->texture->height : 0;
-
-    // Latch the exact source identity/placement that belongs to this real frame. The scene
-    // may change before generated frames are composited (window drag, resize, rotation), so
-    // generated frames must never borrow geometry from a later scene snapshot.
-    if (via_composite && r->lsfg && snap.sync_magic == 0x53594E43u
-        && snap.sync_version == 1u && snap.sync_frame_id != 0) {
-        if (r->framegen_source_valid
-            && r->framegen_source_window_id != snap.sync_source_window_id
-            && snap.sync_source_window_id != 0) {
-            // A different game/window is now the source. Do not interpolate across two
-            // unrelated surfaces even when their resolutions happen to be identical.
-            vkr_lsfg_reset(r->lsfg);
-        }
-        r->framegen_source_frame_id = snap.sync_frame_id;
-        r->framegen_source_window_id = snap.sync_source_window_id;
-        r->framegen_source_x = snap.sync_source_x;
-        r->framegen_source_y = snap.sync_source_y;
-        r->framegen_source_width = snap.sync_source_width;
-        r->framegen_source_height = snap.sync_source_height;
-        r->framegen_source_rect_width = snap.sync_source_rect_width;
-        r->framegen_source_rect_height = snap.sync_source_rect_height;
-        r->framegen_source_surface_width = snap.sync_surface_width;
-        r->framegen_source_surface_height = snap.sync_surface_height;
-        r->framegen_source_orientation = snap.sync_orientation;
-        r->framegen_source_valid = true;
-    }
 
     if (via_composite && r->lsfg) {
         vkr_lsfg_set_guest_extent(r->lsfg, fg_width, fg_height);
@@ -2976,7 +2792,7 @@ static bool record_and_submit_frame(VkRenderer* r) {
         bool full_ok = !needs_fullres_offscreen
             || (r->offscreen_built
                 && (!needs_second_offscreen || r->offscreen[1].image != VK_NULL_HANDLE));
-        has_effects = full_ok && (!wants_sgsr1 || r->sgsr1.built);
+        has_effects = full_ok;
     }
 
     // The base/real frame always renders straight into the swapchain now — the old "render the
@@ -2993,11 +2809,9 @@ static bool record_and_submit_frame(VkRenderer* r) {
     clear.color.float32[3] = 1.0f;
 
     if (has_effects) {
-        VkOffscreen* scene_target = (wants_sgsr1 && r->sgsr1.built)
-            ? &r->sgsr1.source
-            : &r->offscreen[0];
+        VkOffscreen* scene_target = &r->offscreen[0];
 
-        // Pass 1: render scene to either full-res effect input or SGSR1's low-res source.
+        // Pass 1: render scene to the full-res effect input.
         VkRenderPassBeginInfo rpbi = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
         rpbi.renderPass = r->pipelines.offscreen_pass;
         rpbi.framebuffer = scene_target->framebuffer;
@@ -3010,8 +2824,7 @@ static bool record_and_submit_frame(VkRenderer* r) {
                         scene_target->width, scene_target->height);
         vkCmdEndRenderPass(f->cmd);
 
-        // Effect chain: source descriptor moves through ping-pong buffers. When SGSR1 is
-        // first, the first source is low-res and SGSR1 writes full-res output.
+        // Effect chain: source descriptor moves through ping-pong buffers.
         VkOffscreen* src_offscreen = scene_target;
         uint32_t dst_idx = (scene_target == &r->offscreen[0]) ? 1u : 0u;
         for (uint32_t i = 0; i < snap.effect_count; i++) {
@@ -3096,17 +2909,6 @@ static bool record_and_submit_frame(VkRenderer* r) {
                 // draw_scene_pass already uses for a normal frame, so the generated frame lands
                 // in exactly the game's rect and nowhere else.
                 VkScene gen_snap = snap;
-                if (r->framegen_source_valid
-                    && r->framegen_source_frame_id == snap.sync_frame_id
-                    && game_idx >= 0) {
-                    // Position/size is from the source frame, not the current scene.
-                    gen_snap.windows[game_idx].x = r->framegen_source_x;
-                    gen_snap.windows[game_idx].y = r->framegen_source_y;
-                    if (r->framegen_source_rect_width > 0)
-                        gen_snap.windows[game_idx].width = r->framegen_source_rect_width;
-                    if (r->framegen_source_rect_height > 0)
-                        gen_snap.windows[game_idx].height = r->framegen_source_rect_height;
-                }
                 VkTexture gen_tex = {0};
                 gen_tex.image = gt->image;
                 gen_tex.view = gt->view;
@@ -3130,7 +2932,7 @@ static bool record_and_submit_frame(VkRenderer* r) {
                 draw_scene_pass(r, f->cmd, &gen_snap, false,
                                 r->swapchain_extent.width, r->swapchain_extent.height);
                 vkCmdEndRenderPass(f->cmd);
-                // Known limitation: the post-process effect chain (CRT/sharpen/SGSR1/etc.) only
+                // Known limitation: the post-process effect chain (CRT/sharpen/etc.) only
                 // runs on the base/real frame above, not here yet -- effects visually update at
                 // the real frame rate rather than the generated rate. Fine for a first cut.
             }
@@ -3503,7 +3305,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeDestroy)(JNIEnv* env, jclass clazz, jlong ha
     free(r->batch_prepared_scratch);
 
     destroy_record_swapchain(r);
-    destroy_sgsr1_resources(r);
     destroy_offscreen(r);
     destroy_lsfg(r);
     free(r->lsfg_cache_path);
@@ -3568,7 +3369,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeSurfaceCreated)(JNIEnv* env, jclass clazz, j
 
     if (r->surface) {
         vkDeviceWaitIdle(r->device);
-        destroy_sgsr1_resources(r);
         destroy_offscreen(r);
         destroy_swapchain(r);
         vkDestroySurfaceKHR(r->instance, r->surface, NULL);
@@ -3616,7 +3416,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeSurfaceChanged)(JNIEnv* env, jclass clazz, j
 
     lifecycle_begin(r);
     vkDeviceWaitIdle(r->device);
-    destroy_sgsr1_resources(r);
     destroy_offscreen(r);
     destroy_swapchain(r);
     if (!create_swapchain(r, (uint32_t)w, (uint32_t)h)) {
@@ -3650,7 +3449,6 @@ JNIEXPORT jboolean JNICALL JNI_FN(nativeStartRecording)(JNIEnv* env, jclass claz
         // Recreate the display swapchain so its images carry TRANSFER_SRC (the blit source).
         r->record_blit_src = true;
         if (r->surface) {
-            destroy_sgsr1_resources(r);
             destroy_offscreen(r);
             destroy_swapchain(r);
             if (!create_swapchain(r, r->surface_extent.width, r->surface_extent.height)) {
@@ -3665,7 +3463,6 @@ JNIEXPORT jboolean JNICALL JNI_FN(nativeStartRecording)(JNIEnv* env, jclass claz
             VK_LOGE("record: create_record_swapchain failed; recording will not capture");
             r->record_blit_src = false; // revert the display swapchain to its plain usage
             if (r->surface) {
-                destroy_sgsr1_resources(r);
                 destroy_offscreen(r);
                 destroy_swapchain(r);
                 create_swapchain(r, r->surface_extent.width, r->surface_extent.height);
@@ -3705,7 +3502,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeStopRecording)(JNIEnv* env, jclass clazz, jl
     if (r->record_blit_src) {
         r->record_blit_src = false;
         if (r->surface) {
-            destroy_sgsr1_resources(r);
             destroy_offscreen(r);
             destroy_swapchain(r);
             if (!create_swapchain(r, r->surface_extent.width, r->surface_extent.height)) {
@@ -3781,7 +3577,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeSurfaceDestroyed)(JNIEnv* env, jclass clazz,
     lifecycle_begin(r);
 
     if (r->device) vkDeviceWaitIdle(r->device);
-    destroy_sgsr1_resources(r);
     destroy_offscreen(r);
     destroy_swapchain(r);
     if (r->surface) {
@@ -3822,34 +3617,12 @@ JNIEXPORT jboolean JNICALL JNI_FN(nativeRenderFrame)(JNIEnv* env, jclass clazz, 
 #define SCENE_OFF_EFFECT_PARAMS      648      /* float32 × VK_MAX_EFFECTS × 4 */
 #define SCENE_OFF_WINDOW_GEOM        776      /* int32 × VK_MAX_RENDERABLE_WINDOWS × 4 */
 #define SCENE_OFF_WINDOW_UV          1800     /* float32 × VK_MAX_RENDERABLE_WINDOWS × 4 */
-#define SCENE_OFF_SWAP_RB            2824
-#define SCENE_OFF_SOURCE_W           2828
-#define SCENE_OFF_SOURCE_H           2832
-#define SCENE_OFF_SYNC_MAGIC         2836
-#define SCENE_OFF_SYNC_VERSION       2840
-#define SCENE_OFF_SYNC_FRAME_ID      2844
-#define SCENE_OFF_SYNC_TIME_NS       2852
-#define SCENE_OFF_SYNC_SURFACE_W     2860
-#define SCENE_OFF_SYNC_SURFACE_H     2864
-#define SCENE_OFF_SYNC_VIEW_MODE     2868
-#define SCENE_OFF_SYNC_ORIENTATION   2872
-#define SCENE_OFF_SYNC_POINTER_X     2876
-#define SCENE_OFF_SYNC_POINTER_Y     2880
-#define SCENE_OFF_SYNC_POINTER_WIN   2884
-#define SCENE_OFF_SYNC_FOCUS_WIN     2892
-#define SCENE_OFF_SYNC_SOURCE_WIN    2900
-#define SCENE_OFF_SYNC_SOURCE_X      2908
-#define SCENE_OFF_SYNC_SOURCE_Y      2912
-#define SCENE_OFF_SYNC_SOURCE_W      2916
-#define SCENE_OFF_SYNC_SOURCE_H      2920
-#define SCENE_OFF_SYNC_VIEW_X        2924
-#define SCENE_OFF_SYNC_VIEW_Y        2928
-#define SCENE_OFF_SYNC_VIEW_W        2932
-#define SCENE_OFF_SYNC_VIEW_H        2936
-#define SCENE_OFF_SYNC_RECT_W        2940
-#define SCENE_OFF_SYNC_RECT_H        2944
-#define SCENE_OFF_WINDOW_SYNC_IDS    2948
-#define SCENE_BUF_SIZE               (SCENE_OFF_WINDOW_SYNC_IDS + VK_MAX_RENDERABLE_WINDOWS * 8)
+#define SCENE_OFF_WINDOW_IDS         2824     /* int32 × VK_MAX_RENDERABLE_WINDOWS */
+#define SCENE_OFF_SWAP_RB            3080
+#define SCENE_OFF_SOURCE_W           3084
+#define SCENE_OFF_SOURCE_H           3088
+#define SCENE_OFF_SOURCE_WINDOW_ID   3092
+#define SCENE_BUF_SIZE               3096
 
 JNIEXPORT void JNICALL JNI_FN(nativeSetScene)(JNIEnv* env, jclass clazz, jlong handle,
                                               jobject sceneBuf)
@@ -3880,9 +3653,11 @@ JNIEXPORT void JNICALL JNI_FN(nativeSetScene)(JNIEnv* env, jclass clazz, jlong h
     s->window_count = (uint32_t)window_count;
     for (int32_t i = 0; i < window_count; i++) {
         VkRenderableWindow* w = &s->windows[i];
+        int32_t window_id;
+        memcpy(&window_id, base + SCENE_OFF_WINDOW_IDS + (size_t)i * 4, sizeof(int32_t));
+        w->window_id = window_id;
         int64_t h64;
         memcpy(&h64, base + SCENE_OFF_WINDOW_HANDLES + (size_t)i * 8, sizeof(int64_t));
-        memcpy(&w->sync_id, base + SCENE_OFF_WINDOW_SYNC_IDS + (size_t)i * 8, sizeof(uint64_t));
         w->texture = (VkTexture*)(intptr_t)h64;
         int32_t g[4];
         memcpy(g, base + SCENE_OFF_WINDOW_GEOM + (size_t)i * 16, sizeof(g));
@@ -3898,10 +3673,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeSetScene)(JNIEnv* env, jclass clazz, jlong h
         w->v1 = uv[3];
         w->direct_scanout = false;
     }
-
-    // Repair a Wine reparented client before the snapshot becomes the source for both normal
-    // composition and the LSFG/FrameGen game-rect selection.
-    repair_reparented_client_windows(r, s);
 
     // Cursor
     int32_t cursor_visible;
@@ -3953,6 +3724,9 @@ JNIEXPORT void JNICALL JNI_FN(nativeSetScene)(JNIEnv* env, jclass clazz, jlong h
     memcpy(&source_h, base + SCENE_OFF_SOURCE_H, sizeof(int32_t));
     s->source_width = source_w > 0 ? (uint32_t)source_w : 0;
     s->source_height = source_h > 0 ? (uint32_t)source_h : 0;
+    int32_t source_window_id = 0;
+    memcpy(&source_window_id, base + SCENE_OFF_SOURCE_WINDOW_ID, sizeof(int32_t));
+    s->source_window_id = source_window_id;
 
     // Effects
     int32_t effect_count;
@@ -3970,62 +3744,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeSetScene)(JNIEnv* env, jclass clazz, jlong h
         s->effects[i].param0 = ep[1];
         s->effects[i].param1 = ep[2];
         s->effects[i].param2 = ep[3];
-    }
-
-    // SceneSync metadata is validated and latched atomically with the scene snapshot.
-    uint32_t sm, sv;
-    uint64_t sfid, stime, spwin, sfwin, sswin;
-    int32_t spx, spy, sx, sy, sw, sh, svx, svy, svw, svh, srectw, srecth, ssurfw, ssurfh, svm, sori;
-    memcpy(&sm, base + SCENE_OFF_SYNC_MAGIC, 4);
-    memcpy(&sv, base + SCENE_OFF_SYNC_VERSION, 4);
-    memcpy(&sfid, base + SCENE_OFF_SYNC_FRAME_ID, 8);
-    memcpy(&stime, base + SCENE_OFF_SYNC_TIME_NS, 8);
-    memcpy(&ssurfw, base + SCENE_OFF_SYNC_SURFACE_W, 4);
-    memcpy(&ssurfh, base + SCENE_OFF_SYNC_SURFACE_H, 4);
-    memcpy(&svm, base + SCENE_OFF_SYNC_VIEW_MODE, 4);
-    memcpy(&sori, base + SCENE_OFF_SYNC_ORIENTATION, 4);
-    memcpy(&spx, base + SCENE_OFF_SYNC_POINTER_X, 4);
-    memcpy(&spy, base + SCENE_OFF_SYNC_POINTER_Y, 4);
-    memcpy(&spwin, base + SCENE_OFF_SYNC_POINTER_WIN, 8);
-    memcpy(&sfwin, base + SCENE_OFF_SYNC_FOCUS_WIN, 8);
-    memcpy(&sswin, base + SCENE_OFF_SYNC_SOURCE_WIN, 8);
-    memcpy(&sx, base + SCENE_OFF_SYNC_SOURCE_X, 4);
-    memcpy(&sy, base + SCENE_OFF_SYNC_SOURCE_Y, 4);
-    memcpy(&sw, base + SCENE_OFF_SYNC_SOURCE_W, 4);
-    memcpy(&sh, base + SCENE_OFF_SYNC_SOURCE_H, 4);
-    memcpy(&svx, base + SCENE_OFF_SYNC_VIEW_X, 4);
-    memcpy(&svy, base + SCENE_OFF_SYNC_VIEW_Y, 4);
-    memcpy(&svw, base + SCENE_OFF_SYNC_VIEW_W, 4);
-    memcpy(&svh, base + SCENE_OFF_SYNC_VIEW_H, 4);
-    memcpy(&srectw, base + SCENE_OFF_SYNC_RECT_W, 4);
-    memcpy(&srecth, base + SCENE_OFF_SYNC_RECT_H, 4);
-
-    if (sm == 0x53594E43u && sv == 1u && sfid > s->sync_frame_id) {
-        s->sync_magic = sm;
-        s->sync_version = sv;
-        s->sync_frame_id = sfid;
-        s->sync_time_ns = stime;
-        s->sync_surface_width = ssurfw > 0 ? (uint32_t)ssurfw : 0;
-        s->sync_surface_height = ssurfh > 0 ? (uint32_t)ssurfh : 0;
-        s->sync_view_mode = svm;
-        s->sync_orientation = sori;
-        s->sync_pointer_x = spx;
-        s->sync_pointer_y = spy;
-        s->sync_pointer_window_id = spwin;
-        s->sync_focus_window_id = sfwin;
-        s->sync_source_window_id = sswin;
-        s->sync_source_x = sx;
-        s->sync_source_y = sy;
-        s->sync_source_width = sw > 0 ? (uint32_t)sw : 0;
-        s->sync_source_height = sh > 0 ? (uint32_t)sh : 0;
-        s->sync_source_rect_width = srectw > 0 ? (uint32_t)srectw : 0;
-        s->sync_source_rect_height = srecth > 0 ? (uint32_t)srecth : 0;
-        s->sync_view_x = svx;
-        s->sync_view_y = svy;
-        s->sync_view_width = svw > 0 ? (uint32_t)svw : 0;
-        s->sync_view_height = svh > 0 ? (uint32_t)svh : 0;
-    } else if (sm != 0x53594E43u || sv != 1u) {
-        VK_LOGW("nativeSetScene: invalid SceneSync header magic=0x%08x version=%u", sm, sv);
     }
 
     pthread_mutex_unlock(&r->scene_mutex);
@@ -4084,7 +3802,6 @@ JNIEXPORT void JNICALL JNI_FN(nativeSetPresentMode)(JNIEnv* env, jclass clazz, j
     if (r->device) vkDeviceWaitIdle(r->device);
     uint32_t fw = r->surface_extent.width;
     uint32_t fh = r->surface_extent.height;
-    destroy_sgsr1_resources(r);
     destroy_offscreen(r);
     destroy_swapchain(r);
     if (!create_swapchain(r, fw, fh)) {

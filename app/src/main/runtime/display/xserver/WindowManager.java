@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WindowManager extends XResourceManager {
-  private static final String SGSR_RESIZE_TAG = "SGSRResize";
+  private static final String SCREEN_RESIZE_TAG = "ScreenResize";
 
   public enum FocusRevertTo {
     NONE,
@@ -56,6 +56,8 @@ public class WindowManager extends XResourceManager {
 
     default void onUpdateWindowGeometry(Window window, boolean resized) {}
 
+    default void onReparentWindow(Window window, Window oldParent, Window newParent) {}
+
     default void onUpdateWindowAttributes(Window window, Bitmask mask) {}
 
     default void onModifyWindowProperty(Window window, Property property) {}
@@ -88,7 +90,7 @@ public class WindowManager extends XResourceManager {
     short oldHeight = rootWindow.getHeight();
     if (oldWidth == width && oldHeight == height) return false;
 
-    Log.i(SGSR_RESIZE_TAG, "resizeRootWindow: " + oldWidth + "x" + oldHeight +
+    Log.i(SCREEN_RESIZE_TAG, "resizeRootWindow: " + oldWidth + "x" + oldHeight +
         " -> " + width + "x" + height);
     resizeWindowForScreenChange(rootWindow, (short) 0, (short) 0, width, height);
     resizeFullscreenDescendants(rootWindow, oldWidth, oldHeight, width, height);
@@ -276,7 +278,7 @@ public class WindowManager extends XResourceManager {
     boolean moved = window.getX() != x || window.getY() != y;
     if (!resized && !moved) return;
 
-    Log.i(SGSR_RESIZE_TAG, "resizeWindow id=" + window.id +
+    Log.i(SCREEN_RESIZE_TAG, "resizeWindow id=" + window.id +
         (window == rootWindow ? " root" : "") + ": " +
         oldWidth + "x" + oldHeight + "@" + oldX + "," + oldY + " -> " +
         width + "x" + height + "@" + x + "," + y +
@@ -327,7 +329,7 @@ public class WindowManager extends XResourceManager {
               && child.getX() + child.getWidth() >= oldWidth
               && child.getY() + child.getHeight() >= oldHeight;
       if (coveredOldScreen) {
-        Log.i(SGSR_RESIZE_TAG, "resizeFullscreenDescendant id=" + child.id +
+        Log.i(SCREEN_RESIZE_TAG, "resizeFullscreenDescendant id=" + child.id +
             ": covered old screen " + oldWidth + "x" + oldHeight);
         resizeWindowForScreenChange(child, (short) 0, (short) 0, width, height);
       }
@@ -416,10 +418,28 @@ public class WindowManager extends XResourceManager {
               valueMask));
   }
 
-  public void reparentWindow(Window window, Window newParent) {
+  public void reparentWindow(Window window, Window newParent, short x, short y) {
+    if (window == null || newParent == null || window == newParent) return;
+
+    Window ancestor = newParent;
+    while (ancestor != null) {
+      if (ancestor == window) return;
+      ancestor = ancestor.getParent();
+    }
+
     Window oldParent = window.getParent();
+    if (oldParent == newParent && window.getX() == x && window.getY() == y) return;
+
     if (oldParent != null) oldParent.removeChild(window);
     newParent.addChild(window);
+
+    // ReparentWindow supplies the child's new coordinates relative to newParent.
+    // Keep them in the X window tree so root-space geometry is authoritative.
+    window.setX(x);
+    window.setY(y);
+
+    triggerOnReparentWindow(window, oldParent, newParent);
+    triggerOnUpdateWindowGeometry(window, false);
   }
 
   public Window findPointWindow(short rootX, short rootY) {
@@ -482,6 +502,14 @@ public class WindowManager extends XResourceManager {
     synchronized (onWindowModificationListeners) {
       for (int i = onWindowModificationListeners.size() - 1; i >= 0; i--) {
         onWindowModificationListeners.get(i).onUpdateWindowContent(window);
+      }
+    }
+  }
+
+  protected void triggerOnReparentWindow(Window window, Window oldParent, Window newParent) {
+    synchronized (onWindowModificationListeners) {
+      for (int i = onWindowModificationListeners.size() - 1; i >= 0; i--) {
+        onWindowModificationListeners.get(i).onReparentWindow(window, oldParent, newParent);
       }
     }
   }

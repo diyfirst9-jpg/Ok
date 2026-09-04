@@ -108,16 +108,15 @@ typedef enum VkEffectType {
     VK_EFFECT_VIVID = 1,
     VK_EFFECT_HDR = 2,
     VK_EFFECT_NATURAL = 3,
-    VK_EFFECT_SGSR1 = 4,
-    VK_EFFECT_TOON = 5,
-    VK_EFFECT_NTSC = 6,
-    VK_EFFECT_COLORADJ = 7,
-    VK_EFFECT_COLORGRADE = 8,
-    VK_EFFECT_SHARPEN = 9,
-    VK_EFFECT_SCANLINES = 10,
-    VK_EFFECT_NTSC2 = 11,
-    VK_EFFECT_COLORBLIND = 12,
-    VK_EFFECT_PIXELATE = 13,
+    VK_EFFECT_TOON = 4,
+    VK_EFFECT_NTSC = 5,
+    VK_EFFECT_COLORADJ = 6,
+    VK_EFFECT_COLORGRADE = 7,
+    VK_EFFECT_SHARPEN = 8,
+    VK_EFFECT_SCANLINES = 9,
+    VK_EFFECT_NTSC2 = 10,
+    VK_EFFECT_COLORBLIND = 11,
+    VK_EFFECT_PIXELATE = 12,
     VK_EFFECT_COUNT
 } VkEffectType;
 
@@ -134,8 +133,8 @@ typedef struct VkEffectSlot {
 // ============================================================
 
 typedef struct VkRenderableWindow {
-    uint64_t sync_id;           // stable Java-side window identity for SceneSync pairing
     VkTexture* texture;        // borrowed; not owned
+    int32_t    window_id;      // stable X11 Window/resource id
     int        x, y;
     uint32_t   width, height;
     float      u0, v0, u1, v1;
@@ -165,25 +164,13 @@ typedef struct VkScene {
     uint32_t screen_height;
     uint32_t source_width;
     uint32_t source_height;
+    int32_t  source_window_id;
     bool     swap_rb;
 
     VkEffectSlot effects[VK_MAX_EFFECTS];
     uint32_t     effect_count;
 
     bool dirty;
-
-    // SceneSync metadata copied from the Java scene packet.
-    uint32_t sync_magic, sync_version;
-    uint64_t sync_frame_id, sync_time_ns;
-    uint32_t sync_surface_width, sync_surface_height;
-    uint32_t sync_view_mode, sync_orientation;
-    int32_t sync_pointer_x, sync_pointer_y;
-    uint64_t sync_pointer_window_id, sync_focus_window_id, sync_source_window_id;
-    int32_t sync_source_x, sync_source_y;
-    uint32_t sync_source_width, sync_source_height;
-    uint32_t sync_source_rect_width, sync_source_rect_height;
-    int32_t sync_view_x, sync_view_y;
-    uint32_t sync_view_width, sync_view_height;
 } VkScene;
 
 // ============================================================
@@ -247,13 +234,6 @@ typedef struct VkCompositeTarget {
     VkFramebuffer   framebuffer;
     uint32_t        width, height;
 } VkCompositeTarget;
-
-typedef struct VkSgsr1State {
-    VkOffscreen source;
-    bool        built;
-    uint32_t    width;
-    uint32_t    height;
-} VkSgsr1State;
 
 // Recording mirror: a second swapchain on a MediaCodec input surface; each frame is blitted from
 // the display swapchain into it and co-presented. Gated on rec.active.
@@ -430,7 +410,6 @@ typedef struct VkRenderer {
     // Offscreen ping-pong (created lazily when effects are present)
     VkOffscreen      offscreen[2];
     bool             offscreen_built;
-    VkSgsr1State     sgsr1;
 
     VkCompositeTarget composite[VK_MAX_COMPOSITE_TARGETS];
     uint32_t          composite_count;
@@ -458,15 +437,6 @@ typedef struct VkRenderer {
     uint64_t          framegen_last_end_ns;
     uint64_t          framegen_timed_frames;
     uint64_t          presented_frames;
-
-    // Source geometry is latched with the exact real frame that LSFG processed.
-    uint64_t framegen_source_frame_id, framegen_source_window_id;
-    int32_t framegen_source_x, framegen_source_y;
-    uint32_t framegen_source_width, framegen_source_height;
-    uint32_t framegen_source_rect_width, framegen_source_rect_height;
-    uint32_t framegen_source_surface_width, framegen_source_surface_height;
-    uint32_t framegen_source_orientation;
-    bool framegen_source_valid;
 
     // record_blit_src adds TRANSFER_SRC usage to the display swapchain (toggled by start/stop recording).
     bool             record_blit_src;
@@ -539,14 +509,6 @@ typedef struct VkRenderer {
 
     // Scene state
     VkScene scene;
-
-    // Previous raw scene geometry used to repair Wine reparented client windows.
-    // A reparented client may arrive as a sibling of its visible frame and keep the
-    // previous root position for one or more scene updates. The renderer keeps the
-    // previous snapshot so native composition can propagate only the actual frame
-    // movement to the stale client surface. Protected by scene_mutex.
-    VkScene reparent_prev_scene;
-    bool     reparent_prev_valid;
 
     // Compositor present mode requested by Java (default FIFO). Validated against
     // device-supported modes in create_swapchain; falls back to FIFO if unavailable.

@@ -68,6 +68,11 @@ public class Window extends XResource {
     this.originClient = originClient;
   }
 
+  /** Stable X11 window/resource id used to keep renderer identity across z-order/reparent changes. */
+  public int getWindowId() {
+    return id;
+  }
+
   public short getX() {
     return x;
   }
@@ -333,8 +338,8 @@ public class Window extends XResource {
     return new short[] {x, y};
   }
 
-  public short getRootX() {
-    short rootX = x;
+  public int getRootX() {
+    int rootX = x;
     Window window = parent;
     while (window != null) {
       rootX += window.x;
@@ -343,8 +348,8 @@ public class Window extends XResource {
     return rootX;
   }
 
-  public short getRootY() {
-    short rootY = y;
+  public int getRootY() {
+    int rootY = y;
     Window window = parent;
     while (window != null) {
       rootY += window.y;
@@ -354,8 +359,8 @@ public class Window extends XResource {
   }
 
   public android.graphics.Rect getAbsoluteBounds() {
-    short rootX = getRootX();
-    short rootY = getRootY();
+    int rootX = getRootX();
+    int rootY = getRootY();
     return new android.graphics.Rect(rootX, rootY, width + rootX, height + rootY);
   }
 

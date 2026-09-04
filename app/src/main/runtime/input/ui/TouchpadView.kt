@@ -12,7 +12,6 @@ import android.view.View
 import android.widget.FrameLayout
 import com.winlator.cmod.R
 import com.winlator.cmod.runtime.display.XServerDisplayActivity
-import com.winlator.cmod.runtime.display.renderer.ViewTransformation
 import com.winlator.cmod.runtime.display.winhandler.MouseEventFlags
 import com.winlator.cmod.runtime.display.xserver.Pointer
 import com.winlator.cmod.runtime.display.xserver.XServer
@@ -139,50 +138,22 @@ class TouchpadView(
             return
         }
 
-        // renderer.isFullscreen() is the renderer's own Fullscreen-Stretched toggle
-        // (VulkanRenderer#toggleFullscreen / main_menu_toggle_fullscreen) - not the Android
-        // surface/system-UI fullscreen state. Mirror it into vt.forceStretch *before*
-        // calling update(), the same way VulkanRenderer does before every one of its own
-        // update() calls. That way vt.viewOffsetX/Y/viewWidth/Height/aspect end up holding
-        // the exact numbers the renderer's viewport used this frame - one shared computation,
-        // not a second hand-written "fill the whole surface" formula living here too.
-        vt.forceStretch = renderer.isFullscreen()
-
         // Recompute from the current guest and surface dimensions on each input batch.
         // Guest resolution can change without Android relaying a view-size callback.
+        // ViewTransformation itself only ever computes the letterboxed FIT rect (0.1.0
+        // behavior) - fullscreen/stretch is handled here directly, same as 0.1.0's
+        // TouchpadView did.
         vt.update(surfaceW, surfaceH, sceneW, sceneH)
 
-        // Branch on effectiveMode (what update() actually computed against), not mode (the
-        // user's selected resize setting) - they differ exactly when forceStretch overrode it.
-        if (vt.effectiveMode == ViewTransformation.FILL_MODE_STRETCH) {
-            // Exact inverse of the stretch path: surface -> guest.
-            XForm.set(
-                xform,
-                vt.sceneScaleX,
-                0f,
-                0f,
-                vt.sceneScaleY,
-                0f,
-                0f,
-            )
+        if (!renderer.isFullscreen()) {
+            val invAspect = if (vt.aspect > 0f) 1.0f / vt.aspect else 1.0f
+            XForm.makeTranslation(xform, -vt.viewOffsetX.toFloat(), -vt.viewOffsetY.toFloat())
+            XForm.scale(xform, invAspect, invAspect)
         } else {
-            /*
-             * FIT/ZOOM use one authoritative inverse:
-             *     scene = (surface - viewOffset) / aspect
-             *
-             * viewOffsetX/Y is the actual letterbox/pillarbox padding computed by
-             * ViewTransformation.update() - it is zero only along the axis that binds the
-             * aspect ratio (not necessarily both axes). ZOOM keeps the same math for its crop.
-             */
-            val invScale = if (vt.aspect > 0f) 1.0f / vt.aspect else 1.0f
-            XForm.set(
+            XForm.makeScale(
                 xform,
-                invScale,
-                0f,
-                0f,
-                invScale,
-                -vt.viewOffsetX * invScale,
-                -vt.viewOffsetY * invScale,
+                if (surfaceW > 0) sceneW.toFloat() / surfaceW.toFloat() else 1f,
+                if (surfaceH > 0) sceneH.toFloat() / surfaceH.toFloat() else 1f,
             )
         }
     }
@@ -447,11 +418,9 @@ class TouchpadView(
     }
 
     private fun getTouchscreenPointerInside(event: MotionEvent): Boolean {
-        val renderer = xServer.renderer ?: return true
-        val vt = renderer.viewTransformation
-        if (vt.aspect <= 0f) return true
-        val index = event.actionIndex.coerceIn(0, event.pointerCount - 1)
-        return vt.isInsideRenderedFrame(event.getX(index), event.getY(index))
+        // 0.1.0 behavior: no letterbox/pillarbox rejection - the transform matrix
+        // maps every touch, padding included.
+        return true
     }
 
     private fun isTouchscreenPointerActive(event: MotionEvent): Boolean {
@@ -500,15 +469,6 @@ class TouchpadView(
         val index = event.actionIndex.coerceIn(0, event.pointerCount - 1)
         val touchX = event.getX(index)
         val touchY = event.getY(index)
-
-        if (simTouchScreen) {
-            val renderer = xServer.renderer
-            val vt = renderer?.viewTransformation
-            if (vt != null && vt.aspect > 0f && !vt.isInsideRenderedFrame(touchX, touchY)) {
-                // Keep the last valid guest position while the finger is outside the game frame.
-                return
-            }
-        }
 
         val transformedPoint = XForm.transformPoint(xform, touchX, touchY)
         xServer.injectPointerMove(transformedPoint[0].toInt(), transformedPoint[1].toInt())

@@ -508,19 +508,6 @@ class ShortcutSettingsComposeDialog private constructor(
         // Power Save Mode (adaptive frame-time based present-mode/fps throttling)
         state.adaptivePowerSaveEnabled.value = shortcut.getExtra("powerSaveMode", "0") == "1"
 
-        // SGSR 1 per-game shortcut settings
-        state.sgsrEnabled.value = shortcut.getExtra("sgsrEnabled", "0") == "1"
-        state.sgsrUpscaleMode.intValue =
-            shortcut.getExtra("sgsrUpscaleMode", shortcut.getExtra("sgsr_upscale_mode", "1"))
-                .toIntOrNull()
-                ?.coerceIn(1, 6)
-                ?: 1
-        state.sgsrSharpness.intValue =
-            shortcut.getExtra("sgsrSharpness", shortcut.getExtra("sgsr_sharpness", "100"))
-                .toIntOrNull()
-                ?.coerceIn(0, 100)
-                ?: 100
-
         state.netDriverEntries.value = listOf(
             context.getString(R.string.networking_driver_winnative),
             context.getString(R.string.networking_driver_none)
@@ -1325,17 +1312,6 @@ class ShortcutSettingsComposeDialog private constructor(
 
             // Power Save Mode
             shortcut.putExtra("powerSaveMode", if (state.adaptivePowerSaveEnabled.value) "1" else null)
-
-            // SGSR 1 is a shortcut-only setting, not a container override.
-            if (state.sgsrEnabled.value) {
-                shortcut.putExtra("sgsrEnabled", "1")
-                shortcut.putExtra("sgsrUpscaleMode", state.sgsrUpscaleMode.intValue.coerceIn(1, 6).toString())
-                shortcut.putExtra("sgsrSharpness", state.sgsrSharpness.intValue.coerceIn(0, 100).toString())
-            } else {
-                shortcut.putExtra("sgsrEnabled", null)
-                shortcut.putExtra("sgsrUpscaleMode", null)
-                shortcut.putExtra("sgsrSharpness", null)
-            }
 
             hasContainerOverride = hasContainerOverride or saveOverride(
                 NetworkingSettings.EXTRA_DRIVER,

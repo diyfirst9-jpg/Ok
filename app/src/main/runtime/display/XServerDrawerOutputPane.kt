@@ -259,28 +259,6 @@ internal fun OutputActiveControls(
                 )
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy((6f * paneScale).dp)) {
-            OutputFieldLabel(stringResource(R.string.session_drawer_output_aspect_ratio), paneScale)
-            val aspectLabels =
-                listOf(
-                    stringResource(R.string.session_drawer_output_aspect_fit),
-                    stringResource(R.string.session_drawer_output_aspect_stretch),
-                    stringResource(R.string.session_drawer_output_aspect_zoom),
-                )
-            ChipFlow {
-                aspectLabels.forEachIndexed { index, label ->
-                    HUDToggleChip(
-                        label = label,
-                        checked = state.outputAspectMode == index,
-                        onClick = { listener.onOutputAspectModeSelected(index) },
-                        modifier = Modifier.paneNavItem(
-                            cornerRadius = (12f * paneScale).dp,
-                            onActivate = { listener.onOutputAspectModeSelected(index) },
-                        ),
-                    )
-                }
-            }
-        }
     }
 
     if (state.outputGameModeSupported) {

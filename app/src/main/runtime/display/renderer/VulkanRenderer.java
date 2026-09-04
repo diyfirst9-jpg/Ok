@@ -28,7 +28,6 @@ import com.winlator.cmod.shared.math.XForm;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -60,13 +59,6 @@ public class VulkanRenderer
 
     private final Drawable rootCursorDrawable;
     private final ArrayList<RenderableWindow> renderableWindows = new ArrayList<>();
-    // Effective root-space positions.  Kept separately so the compositor can correct
-    // a stale reparented client without mutating RenderableWindow itself.
-    private final IdentityHashMap<Window, int[]> effectiveRootPositions = new IdentityHashMap<>();
-    // Stable per-session window IDs. X11 handles can be recycled; Java object identity cannot.
-    private final IdentityHashMap<Window, Long> sceneWindowIds = new IdentityHashMap<>();
-    private long nextSceneWindowId = 1L;
-    private long sceneFrameId = 0L;
     private final Texture.UploadBatch textureUploadBatch =
             new Texture.UploadBatch((64 + 1) * Texture.MAX_UPLOAD_RECTS);
     private boolean fullscreen = false;
@@ -241,37 +233,12 @@ public class VulkanRenderer
     private static final int OFF_EFFECT_PARAMS   = 648;
     private static final int OFF_WINDOW_GEOM     = 776;
     private static final int OFF_WINDOW_UV       = 1800;
-    private static final int OFF_SWAP_RB         = 2824;
-    private static final int OFF_SOURCE_W        = 2828;
-    private static final int OFF_SOURCE_H        = 2832;
-    // SceneSync v1 metadata: identity + geometry + input travel with the same scene packet.
-    private static final int SCENE_SYNC_MAGIC     = 0x53594E43; // "SYNC"
-    private static final int SCENE_SYNC_VERSION   = 1;
-    private static final int OFF_SYNC_MAGIC       = 2836;
-    private static final int OFF_SYNC_VERSION     = 2840;
-    private static final int OFF_SYNC_FRAME_ID    = 2844;
-    private static final int OFF_SYNC_TIME_NS     = 2852;
-    private static final int OFF_SYNC_SURFACE_W   = 2860;
-    private static final int OFF_SYNC_SURFACE_H   = 2864;
-    private static final int OFF_SYNC_VIEW_MODE   = 2868;
-    private static final int OFF_SYNC_ORIENTATION = 2872;
-    private static final int OFF_SYNC_POINTER_X   = 2876;
-    private static final int OFF_SYNC_POINTER_Y   = 2880;
-    private static final int OFF_SYNC_POINTER_WIN = 2884;
-    private static final int OFF_SYNC_FOCUS_WIN   = 2892;
-    private static final int OFF_SYNC_SOURCE_WIN  = 2900;
-    private static final int OFF_SYNC_SOURCE_X    = 2908;
-    private static final int OFF_SYNC_SOURCE_Y    = 2912;
-    private static final int OFF_SYNC_SOURCE_W    = 2916;
-    private static final int OFF_SYNC_SOURCE_H    = 2920;
-    private static final int OFF_SYNC_VIEW_X      = 2924;
-    private static final int OFF_SYNC_VIEW_Y      = 2928;
-    private static final int OFF_SYNC_VIEW_W      = 2932;
-    private static final int OFF_SYNC_VIEW_H      = 2936;
-    private static final int OFF_SYNC_RECT_W      = 2940;
-    private static final int OFF_SYNC_RECT_H      = 2944;
-    private static final int OFF_WINDOW_SYNC_IDS  = 2948;
-    private static final int SCENE_BUF_SIZE       = OFF_WINDOW_SYNC_IDS + (MAX_WINDOWS * 8);
+    private static final int OFF_WINDOW_IDS      = 2824; // int32 × MAX_WINDOWS
+    private static final int OFF_SWAP_RB         = 3080;
+    private static final int OFF_SOURCE_W        = 3084;
+    private static final int OFF_SOURCE_H        = 3088;
+    private static final int OFF_SOURCE_WINDOW_ID = 3092;
+    private static final int SCENE_BUF_SIZE      = 3096;
 
     private final ByteBuffer sceneBuf =
             ByteBuffer.allocateDirect(SCENE_BUF_SIZE).order(ByteOrder.nativeOrder());
@@ -481,7 +448,6 @@ public class VulkanRenderer
     public void onSurfaceChanged(int width, int height) {
         surfaceWidth = width;
         surfaceHeight = height;
-        viewTransformation.forceStretch = fullscreen;
         viewTransformation.update(width, height,
                 xServer.screenInfo.width, xServer.screenInfo.height);
         viewportNeedsUpdate = true;
@@ -508,17 +474,6 @@ public class VulkanRenderer
 
     // ----- Scene assembly ----------------------------------------------------
 
-    private long getSceneWindowId(Window window) {
-        if (window == null) return 0L;
-        Long id = sceneWindowIds.get(window);
-        if (id == null) {
-            id = nextSceneWindowId++;
-            if (id == 0L) id = nextSceneWindowId++;
-            sceneWindowIds.put(window, id);
-        }
-        return id;
-    }
-
     private void buildAndSubmitFrame(long handle) {
         // Self-heal: if the real surface size differs from our cache (display reparent), recompute the viewport.
         if (xServerView != null) {
@@ -527,7 +482,6 @@ public class VulkanRenderer
             if (actualW > 0 && actualH > 0 && (actualW != surfaceWidth || actualH != surfaceHeight)) {
                 surfaceWidth = actualW;
                 surfaceHeight = actualH;
-                viewTransformation.forceStretch = fullscreen;
                 viewTransformation.update(actualW, actualH,
                         xServer.screenInfo.width, xServer.screenInfo.height);
                 viewportNeedsUpdate = true;
@@ -556,33 +510,38 @@ public class VulkanRenderer
 
         final ByteBuffer buf = sceneBuf;
 
-        // viewTransformation.forceStretch mirrors 'fullscreen' (set on every update() call
-        // above), so when fullscreen is on this is already (0,0,surfaceWidth,surfaceHeight) -
-        // no need for a second, separately-written copy of that formula here.
-        int viewX = viewTransformation.viewOffsetX;
-        int viewY = viewTransformation.viewOffsetY;
-        int viewW = viewTransformation.viewWidth;
-        int viewH = viewTransformation.viewHeight;
+        // 0.1.0-style viewport: fullscreen bypasses ViewTransformation entirely and
+        // stretches to the full surface; otherwise use the letterboxed FIT rect.
+        int viewX, viewY, viewW, viewH;
+        if (fullscreen) {
+            viewX = 0;
+            viewY = 0;
+            viewW = surfaceWidth;
+            viewH = surfaceHeight;
+        } else {
+            viewX = viewTransformation.viewOffsetX;
+            viewY = viewTransformation.viewOffsetY;
+            viewW = viewTransformation.viewWidth;
+            viewH = viewTransformation.viewHeight;
+        }
         buf.putInt(OFF_VIEWPORT,      viewX);
         buf.putInt(OFF_VIEWPORT + 4,  viewY);
         buf.putInt(OFF_VIEWPORT + 8,  viewW);
         buf.putInt(OFF_VIEWPORT + 12, viewH);
 
-        // Scissor now always clips to the exact same rect that touch input already
-        // trusts as "the rendered frame": viewTransformation.viewOffsetX/Y/viewWidth/
-        // viewHeight - the very fields isInsideRenderedFrame()/mapSurfaceToScene() use
-        // to decide what counts as inside the program. Previously fullscreen/magnifier
-        // had render using a different notion of bounds (or none at all - scissor was
-        // off), while touch used this rect the whole time. One rect, one source of
-        // truth, for both what you can touch and what can draw - not two formulas that
-        // are merely supposed to agree.
-        int sX = Math.max(0, viewTransformation.viewOffsetX);
-        int sY = Math.max(0, viewTransformation.viewOffsetY);
-        int sRight = Math.min(surfaceWidth, viewTransformation.viewOffsetX + viewTransformation.viewWidth);
-        int sBottom = Math.min(surfaceHeight, viewTransformation.viewOffsetY + viewTransformation.viewHeight);
-        int sW = Math.max(0, sRight - sX);
-        int sH = Math.max(0, sBottom - sY);
-        buf.putInt(OFF_SCISSOR_ENABLED, 1);
+        // Scissor only applies in the letterboxed FIT case, same as 0.1.0 (fullscreen
+        // had no scissor test at all).
+        boolean scissorEnabled = !fullscreen;
+        int sX = 0, sY = 0, sW = 0, sH = 0;
+        if (scissorEnabled) {
+            sX = Math.max(0, viewTransformation.viewOffsetX);
+            sY = Math.max(0, viewTransformation.viewOffsetY);
+            int sRight = Math.min(surfaceWidth, viewTransformation.viewOffsetX + viewTransformation.viewWidth);
+            int sBottom = Math.min(surfaceHeight, viewTransformation.viewOffsetY + viewTransformation.viewHeight);
+            sW = Math.max(0, sRight - sX);
+            sH = Math.max(0, sBottom - sY);
+        }
+        buf.putInt(OFF_SCISSOR_ENABLED, scissorEnabled ? 1 : 0);
         buf.putInt(OFF_SCISSOR,      sX);
         buf.putInt(OFF_SCISSOR + 4,  sY);
         buf.putInt(OFF_SCISSOR + 8,  sW);
@@ -597,7 +556,7 @@ public class VulkanRenderer
 
         viewportNeedsUpdate = false;
 
-        // Collect renderable windows (occlusion skipping).
+        // Collect renderable windows (occlusion skipping). Window IDs travel with every texture/rect so native never has to infer identity from array position.
         int winCount = 0;
         long cursorHandle = 0;
         boolean cursorOnscreen = false;
@@ -606,11 +565,7 @@ public class VulkanRenderer
         int sourceH = 0;
         int sourceArea = 0;
         int sourceTier = -1;
-        long sourceWindowId = 0L;
-        int sourceX = 0, sourceY = 0;
-        int sourceRectW = 0, sourceRectH = 0;
-        long focusedWindowId = 0L;
-        long pointerWindowId = 0L;
+        int sourceWindowId = 0;
 
         try (XLock lock = xServer.lock(XServer.Lockable.WINDOW_MANAGER, XServer.Lockable.DRAWABLE_MANAGER)) {
             int screenW = xServer.screenInfo.width;
@@ -619,9 +574,6 @@ public class VulkanRenderer
             // window that was clicked/opened) as the frame-gen source instead of guessing by
             // whichever drawable happens to have the largest area.
             Window interactedWindow = xServer.windowManager.getFocusedWindow();
-            focusedWindowId = getSceneWindowId(interactedWindow);
-            Window pointWindowForSync = xServer.inputDeviceManager.getPointWindow();
-            pointerWindowId = getSceneWindowId(pointWindowForSync);
             int startIndex = 0;
             for (int i = renderableWindows.size() - 1; i >= 0; i--) {
                 RenderableWindow rWin = renderableWindows.get(i);
@@ -705,12 +657,7 @@ public class VulkanRenderer
                         sourceH = candidateH;
                         sourceArea = candidateArea;
                         sourceTier = candidateTier;
-                        sourceWindowId = getSceneWindowId(rw.window);
-                        int[] sourcePos = effectiveRootPositions.get(rw.window);
-                        sourceX = sourcePos != null ? sourcePos[0] : rw.rootX;
-                        sourceY = sourcePos != null ? sourcePos[1] : rw.rootY;
-                        sourceRectW = drawable.width;
-                        sourceRectH = drawable.height;
+                        sourceWindowId = rw.windowId;
                     }
                 }
                 if (!loggedAhbSceneUse && tex instanceof GPUImage && ApplicationLogGate.isEnabled()) {
@@ -720,16 +667,13 @@ public class VulkanRenderer
                             + Long.toHexString(tex.getNativeHandle()));
                     loggedAhbSceneUse = true;
                 }
-                buf.putLong(OFF_WINDOW_SYNC_IDS + winCount * 8, getSceneWindowId(rw.window));
                 buf.putLong(OFF_WINDOW_HANDLES + winCount * 8, tex.getNativeHandle());
                 int gOff = OFF_WINDOW_GEOM + winCount * 16;
-                int[] effectiveRoot = effectiveRootPositions.get(rw.window);
-                final int drawRootX = effectiveRoot != null ? effectiveRoot[0] : rw.rootX;
-                final int drawRootY = effectiveRoot != null ? effectiveRoot[1] : rw.rootY;
-                buf.putInt(gOff,      drawRootX);
-                buf.putInt(gOff + 4,  drawRootY);
+                buf.putInt(gOff,      rw.rootX);
+                buf.putInt(gOff + 4,  rw.rootY);
                 buf.putInt(gOff + 8,  drawable.width);
                 buf.putInt(gOff + 12, drawable.height);
+                buf.putInt(OFF_WINDOW_IDS + winCount * 4, rw.windowId);
                 int uvOff = OFF_WINDOW_UV + winCount * 16;
                 if (textureSrc != drawable) {
                     float invW = 1.0f / Math.max(1, textureSrc.width);
@@ -798,6 +742,7 @@ public class VulkanRenderer
         buf.putInt(OFF_SWAP_RB, swapRB ? 1 : 0);
         buf.putInt(OFF_SOURCE_W, sourceW);
         buf.putInt(OFF_SOURCE_H, sourceH);
+        buf.putInt(OFF_SOURCE_WINDOW_ID, sourceWindowId);
 
         Effect[] active = effectComposer.snapshot();
         int effectCount = Math.min(active.length, MAX_EFFECTS);
@@ -811,37 +756,6 @@ public class VulkanRenderer
             buf.putFloat(pOff + 8,  effectParamsScratch[i * 4 + 2]);
             buf.putFloat(pOff + 12, effectParamsScratch[i * 4 + 3]);
         }
-
-        // SceneSync packet: the generated frame must keep the source scene's geometry even if
-        // the next real frame moves/resizes the window or the display rotates.
-        final long syncFrameId = ++sceneFrameId;
-        final long syncTimeNs = System.nanoTime();
-        final int orientation = surfaceWidth >= surfaceHeight ? 0 : 1;
-        final long focusedId = focusedWindowId;
-        final long pointerWindowSyncId = pointerWindowId;
-        buf.putInt(OFF_SYNC_MAGIC, SCENE_SYNC_MAGIC);
-        buf.putInt(OFF_SYNC_VERSION, SCENE_SYNC_VERSION);
-        buf.putLong(OFF_SYNC_FRAME_ID, syncFrameId);
-        buf.putLong(OFF_SYNC_TIME_NS, syncTimeNs);
-        buf.putInt(OFF_SYNC_SURFACE_W, surfaceWidth);
-        buf.putInt(OFF_SYNC_SURFACE_H, surfaceHeight);
-        buf.putInt(OFF_SYNC_VIEW_MODE, viewTransformation.effectiveMode);
-        buf.putInt(OFF_SYNC_ORIENTATION, orientation);
-        buf.putInt(OFF_SYNC_POINTER_X, xServer.pointer.getClampedX());
-        buf.putInt(OFF_SYNC_POINTER_Y, xServer.pointer.getClampedY());
-        buf.putLong(OFF_SYNC_POINTER_WIN, pointerWindowSyncId);
-        buf.putLong(OFF_SYNC_FOCUS_WIN, focusedId);
-        buf.putLong(OFF_SYNC_SOURCE_WIN, sourceWindowId);
-        buf.putInt(OFF_SYNC_SOURCE_X, sourceX);
-        buf.putInt(OFF_SYNC_SOURCE_Y, sourceY);
-        buf.putInt(OFF_SYNC_SOURCE_W, sourceW);
-        buf.putInt(OFF_SYNC_SOURCE_H, sourceH);
-        buf.putInt(OFF_SYNC_VIEW_X, viewX);
-        buf.putInt(OFF_SYNC_VIEW_Y, viewY);
-        buf.putInt(OFF_SYNC_VIEW_W, viewW);
-        buf.putInt(OFF_SYNC_VIEW_H, viewH);
-        buf.putInt(OFF_SYNC_RECT_W, sourceRectW);
-        buf.putInt(OFF_SYNC_RECT_H, sourceRectH);
 
         nativeSetScene(handle, buf);
         nativeSetSourceFrameCount(handle, presentFrames.get());
@@ -867,6 +781,15 @@ public class VulkanRenderer
 
     @Override
     public void onChangeWindowZOrder(Window window) {
+        xServerView.queueEvent(this::updateScene);
+        requestRenderCoalesced();
+    }
+
+    @Override
+    public void onReparentWindow(Window window, Window oldParent, Window newParent) {
+        // Reparenting changes the coordinate space of the window and every descendant.
+        // Rebuild from the authoritative X window tree instead of repairing stale native
+        // coordinates after the scene has crossed the JNI boundary.
         xServerView.queueEvent(this::updateScene);
         requestRenderCoalesced();
     }
@@ -919,87 +842,14 @@ public class VulkanRenderer
 
     private void updateScene() {
         try (XLock lock = xServer.lock(XServer.Lockable.WINDOW_MANAGER, XServer.Lockable.DRAWABLE_MANAGER)) {
-            // Keep the previous root-space geometry for one update.  Some Wine/Windows
-            // programs move their visible client into a sibling/reparented X11 window.
-            // In that case the frame receives the move event but the client can retain
-            // its old root coordinates for one or more X11 events.  A simple full tree
-            // rebuild is therefore not enough: the frame moves while the game's pixels
-            // remain at the old location (the exact detached-window symptom).
-            final IdentityHashMap<Window, int[]> previous = new IdentityHashMap<>();
-            for (RenderableWindow old : renderableWindows) {
-                if (old.window == null) continue;
-                int w = old.content != null ? Math.max(0, old.content.width) : 0;
-                int h = old.content != null ? Math.max(0, old.content.height) : 0;
-                previous.put(old.window, new int[] { old.rootX, old.rootY, w, h });
-            }
-
+            // Direct binding: each window is drawn at its own current root-space
+            // position from the X window tree, same as the 0.1.0 renderer. No
+            // reparent-correction heuristics.
             renderableWindows.clear();
             collectRenderableWindows(
                     xServer.windowManager.rootWindow,
                     xServer.windowManager.rootWindow.getX(),
                     xServer.windowManager.rootWindow.getY());
-
-            effectiveRootPositions.clear();
-            for (RenderableWindow rw : renderableWindows) {
-                if (rw.window != null) {
-                    effectiveRootPositions.put(rw.window, new int[] { rw.rootX, rw.rootY });
-                }
-            }
-
-            // Synchronize reparented/sibling client windows with a moved Wine frame.
-            // Only propagate a delta when:
-            //   1) the old window is a real container/frame (mapped child),
-            //   2) that frame actually moved, and
-            //   3) the candidate client was previously inside/overlapping the frame and
-            //      itself did NOT move.
-            // This makes the correction generic without changing normal X11 child motion.
-            for (RenderableWindow frame : renderableWindows) {
-                if (frame.window == null || !hasMappedChild(frame.window)) continue;
-                int[] oldFrame = previous.get(frame.window);
-                if (oldFrame == null) continue;
-
-                final int dx = frame.rootX - oldFrame[0];
-                final int dy = frame.rootY - oldFrame[1];
-                if (dx == 0 && dy == 0) continue;
-
-                final int fw = Math.max(1, oldFrame[2]);
-                final int fh = Math.max(1, oldFrame[3]);
-                final int oldRight = oldFrame[0] + fw;
-                final int oldBottom = oldFrame[1] + fh;
-
-                for (RenderableWindow client : renderableWindows) {
-                    if (client == frame || client.window == null) continue;
-                    int[] oldClient = previous.get(client.window);
-                    if (oldClient == null) continue;
-
-                    // If X11 already moved this window, leave its authoritative geometry alone.
-                    if (client.rootX - oldClient[0] != 0 || client.rootY - oldClient[1] != 0) continue;
-
-                    final int cw = Math.max(1, oldClient[2]);
-                    final int ch = Math.max(1, oldClient[3]);
-                    final int cRight = oldClient[0] + cw;
-                    final int cBottom = oldClient[1] + ch;
-                    final int ix = Math.max(0, Math.min(oldRight, cRight) - Math.max(oldFrame[0], oldClient[0]));
-                    final int iy = Math.max(0, Math.min(oldBottom, cBottom) - Math.max(oldFrame[1], oldClient[1]));
-                    final long intersection = (long) ix * (long) iy;
-                    final long clientArea = (long) cw * (long) ch;
-                    final boolean centerInside =
-                            oldClient[0] + cw / 2 >= oldFrame[0] &&
-                            oldClient[0] + cw / 2 < oldRight &&
-                            oldClient[1] + ch / 2 >= oldFrame[1] &&
-                            oldClient[1] + ch / 2 < oldBottom;
-
-                    // Require substantial overlap (or center containment) so unrelated
-                    // floating windows are not dragged along with the frame.
-                    if (centerInside || intersection * 2L >= clientArea) {
-                        int[] effective = effectiveRootPositions.get(client.window);
-                        if (effective != null) {
-                            effective[0] += dx;
-                            effective[1] += dy;
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -1055,7 +905,6 @@ public class VulkanRenderer
         int oldViewOffsetX = viewTransformation.viewOffsetX;
         int oldViewOffsetY = viewTransformation.viewOffsetY;
         if (surfaceWidth > 0 && surfaceHeight > 0) {
-            viewTransformation.forceStretch = fullscreen;
             viewTransformation.update(surfaceWidth, surfaceHeight,
                     xServer.screenInfo.width, xServer.screenInfo.height);
         }
@@ -1076,7 +925,6 @@ public class VulkanRenderer
     public void toggleFullscreen() {
         fullscreen = !fullscreen;
         if (surfaceWidth > 0 && surfaceHeight > 0) {
-            viewTransformation.forceStretch = fullscreen;
             viewTransformation.update(surfaceWidth, surfaceHeight,
                     xServer.screenInfo.width, xServer.screenInfo.height);
         }
@@ -1182,12 +1030,13 @@ public class VulkanRenderer
     public boolean isViewportNeedsUpdate() { return viewportNeedsUpdate; }
     public void setViewportNeedsUpdate(boolean v) { this.viewportNeedsUpdate = v; }
 
-    // Fill mode (FIT/STRETCH/ZOOM), applied live: recompute the viewport and request a frame.
+    // Fill-mode selection was dropped with the FIT/STRETCH/ZOOM system. Only FIT
+    // (letterbox, aspect-preserving) exists now, matching the 0.1.0 renderer. These
+    // methods are kept as no-ops so callers (external-display menu) still compile.
+    public static final int FILL_MODE_FIT = 0;
+
     public void setFillMode(int mode) {
-        if (viewTransformation.mode == mode) return;
-        viewTransformation.mode = mode;
         if (surfaceWidth > 0 && surfaceHeight > 0) {
-            viewTransformation.forceStretch = fullscreen;
             viewTransformation.update(surfaceWidth, surfaceHeight,
                     xServer.screenInfo.width, xServer.screenInfo.height);
         }
@@ -1195,11 +1044,10 @@ public class VulkanRenderer
         if (xServerView != null) xServerView.requestRender();
     }
 
-    public int getFillMode() { return viewTransformation.mode; }
+    public int getFillMode() { return FILL_MODE_FIT; }
 
     // Set the fill mode without recomputing the viewport (cached size may be stale mid-reparent).
     public void setFillModeQuiet(int mode) {
-        viewTransformation.mode = mode;
         viewportNeedsUpdate = true;
     }
 
@@ -1217,7 +1065,6 @@ public class VulkanRenderer
         if (w <= 0 || h <= 0) return;
         surfaceWidth = w;
         surfaceHeight = h;
-        viewTransformation.forceStretch = fullscreen;
         viewTransformation.update(w, h, xServer.screenInfo.width, xServer.screenInfo.height);
         viewportNeedsUpdate = true;
         if (xServerView != null) xServerView.requestRender();

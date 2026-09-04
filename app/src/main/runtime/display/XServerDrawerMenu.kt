@@ -638,8 +638,6 @@ data class XServerDrawerState(
     val frameGenFlowScale: Int = 70,
     val frameGenPrecision: Int = FrameGenPrecisionFP16,
     val screenEffectsCardExpanded: Boolean = false,
-    val sgsrEnabled: Boolean = false,
-    val sgsrSharpness: Int = 100,
     val vividEnabled: Boolean = false,
     val vividStrength: Int = 100,
     val colorProfile: Int = 0,
@@ -1077,10 +1075,6 @@ interface XServerDrawerActionListener {
 
     fun onOutputCastClick()
 
-    fun onSGSREnabledChanged(enabled: Boolean)
-
-    fun onSGSRSharpnessChanged(sharpness: Int)
-
     fun onVividEnabledChanged(enabled: Boolean)
 
     fun onVividStrengthChanged(strength: Int)
@@ -1220,8 +1214,6 @@ fun buildXServerDrawerState(
     gyroscopeCardExpanded: Boolean = false,
     fpsLimit: Int = 0,
     screenEffectsCardExpanded: Boolean = false,
-    sgsrEnabled: Boolean = false,
-    sgsrSharpness: Int = 100,
     vividEnabled: Boolean = false,
     vividStrength: Int = 100,
     colorProfile: Int = 0,
@@ -1325,7 +1317,7 @@ fun buildXServerDrawerState(
                 title = context.getString(R.string.session_drawer_screen_effects),
                 subtitle = context.getString(R.string.session_drawer_screen_effects_subtitle),
                 icon = Icons.Outlined.Tune,
-                active = sgsrEnabled || vividEnabled || colorProfile > 0 ||
+                active = vividEnabled || colorProfile > 0 ||
                     brightness != 0 || contrast != 0 || gammaPercent != 100 || scaleFilter != 0 ||
                     saturation != 100 || temperature != 0 || tint != 0 ||
                     sharpenEnabled || scanlinesEnabled || pixelateEnabled || colorBlind != 0,
@@ -1415,8 +1407,6 @@ fun buildXServerDrawerState(
         fpsLimit = fpsLimit,
         maxRefreshRate = maxRefreshRate,
         screenEffectsCardExpanded = screenEffectsCardExpanded,
-        sgsrEnabled = sgsrEnabled,
-        sgsrSharpness = sgsrSharpness,
         vividEnabled = vividEnabled,
         vividStrength = vividStrength,
         colorProfile = colorProfile,

@@ -439,9 +439,6 @@ class GameSettingsStateHolder {
     val selectedDxWrapper = mutableIntStateOf(0)
     val surfaceEffectEntries = mutableStateOf<List<String>>(emptyList())
     val selectedSurfaceEffect = mutableIntStateOf(0)
-    val sgsrEnabled = mutableStateOf(false)
-    val sgsrUpscaleMode = mutableIntStateOf(1)
-    val sgsrSharpness = mutableIntStateOf(100)
 
     val frameGenEnabled = mutableStateOf(false)
     val frameGenMultiplier = mutableIntStateOf(2)

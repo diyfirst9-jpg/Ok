@@ -659,7 +659,6 @@
     <string name="container_graphics_bcn_emulation_cache">BCn Emulation Cache</string>
     <string name="container_graphics_transcoder">BCn Transcoder</string>
     <string name="container_graphics_quality">BCn Quality</string>
-    <string name="shortcuts_graphics_sgsr_full_title">Snapdragon™ Game Super Resolution 1</string>
     
     <string name="container_presets_confirm_duplicate">Do you want to duplicate this preset?</string>
     <string name="container_presets_confirm_remove">Do you want to remove this preset?</string>
@@ -762,8 +761,6 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="session_drawer_screen_effects_subtitle">Upscaling and color effects</string>
     <string name="session_drawer_super_resolution">Super Resolution</string>
     <string name="session_drawer_upscaler_mode">Upscaler</string>
-    <string name="session_drawer_upscaler_fsr">SGSR 1</string>
-    <string name="session_drawer_sgsr_edge_sharpness">Edge Sharpness</string>
     <string name="session_drawer_vivid">Vivid</string>
     <string name="session_drawer_vivid_strength">Vivid Strength</string>
     <string name="session_drawer_color_profile">Color Effect</string>

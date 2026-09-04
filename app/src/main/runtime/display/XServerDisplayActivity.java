@@ -109,7 +109,6 @@ import com.winlator.cmod.runtime.display.renderer.effects.NTSC2Effect;
 import com.winlator.cmod.runtime.display.renderer.effects.NTSCEffect;
 import com.winlator.cmod.runtime.display.renderer.effects.PixelateEffect;
 import com.winlator.cmod.runtime.display.renderer.effects.ScanlinesEffect;
-import com.winlator.cmod.runtime.display.renderer.effects.SGSRUpscaler;
 import com.winlator.cmod.runtime.display.renderer.effects.SharpenEffect;
 import com.winlator.cmod.runtime.display.renderer.effects.ToonEffect;
 import com.winlator.cmod.runtime.display.renderer.effects.VividEffect;
@@ -450,11 +449,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
     private int frameGenPrecision = com.winlator.cmod.runtime.display.lsfg.LosslessScaling.VARIANT_FP16;
     private String frameGenCachePath = null;
     private float frameGenRefreshRate = 0f;
-    private boolean sgsrEnabled = false;
-    private boolean sgsrRuntimeEnabled = false;
-    private int sgsrUpscaleMode = 1;
-    private int sgsrSharpness = 100;
-    private String sgsrBaseScreenSize = Container.DEFAULT_SCREEN_SIZE;
+    private String baseScreenSize = Container.DEFAULT_SCREEN_SIZE;
     private boolean vividEnabled = false;
     private int vividStrength = 100;
     private int colorProfile = 0;
@@ -1440,11 +1435,11 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
             return;
         }
 
-        String baseScreenSize = (sgsrBaseScreenSize != null && !sgsrBaseScreenSize.isEmpty())
-                ? sgsrBaseScreenSize
+        String rotateBaseScreenSize = (baseScreenSize != null && !baseScreenSize.isEmpty())
+                ? baseScreenSize
                 : (xServer != null ? xServer.screenInfo.toString() : Container.DEFAULT_SCREEN_SIZE);
 
-        String[] parts = baseScreenSize != null ? baseScreenSize.split("x") : null;
+        String[] parts = rotateBaseScreenSize != null ? rotateBaseScreenSize.split("x") : null;
         if (parts == null || parts.length != 2) {
             Log.w("XServerDisplayActivity", "Cannot rotate screen: invalid screenSize '" + baseScreenSize + "'");
             rotateScreenInProgress.set(false);
@@ -2154,15 +2149,8 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
 
         inputControlsManager = new InputControlsManager(this);
         gestureProfileManager = new GestureProfileManager(this);
-        sgsrBaseScreenSize = screenSize;
-        String effectiveScreenSize =
-                SGSRResolutionUtils.applyRenderScale(screenSize, sgsrEnabled, sgsrUpscaleMode);
-        if (!effectiveScreenSize.equals(screenSize)) {
-            Log.i("XServerDisplayActivity", "SGSR render scale active: container='" + screenSize +
-                    "' effective='" + effectiveScreenSize + "' mode=" + sgsrUpscaleMode);
-        }
-        xServer = new XServer(new ScreenInfo(effectiveScreenSize), isNativeRenderingEnabled);
-        sgsrRuntimeEnabled = sgsrEnabled;
+        baseScreenSize = screenSize;
+        xServer = new XServer(new ScreenInfo(screenSize), isNativeRenderingEnabled);
         xServer.setWinHandler(winHandler);
 
         boolean[] winStarted = {false};
@@ -4596,8 +4584,6 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 gyroscopeCardExpanded,
                 xServerView != null ? xServerView.getRenderer().getFpsLimit() : 0,
                 screenEffectsCardExpanded,
-                sgsrEnabled,
-                sgsrSharpness,
                 vividEnabled,
                 vividStrength,
                 colorProfile,
@@ -5070,36 +5056,6 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                         }
                         frameGenCachePath = selected.isFile() ? selected.getAbsolutePath() : null;
                         applyFrameGenerationLive();
-                    }
-
-
-                    @Override
-                    public void onSGSREnabledChanged(boolean enabled) {
-                        boolean wasEnabled = sgsrEnabled;
-                        boolean wasRuntimeEnabled = sgsrRuntimeEnabled;
-                        sgsrEnabled = enabled;
-                        saveSGSRShortcutSettings();
-                        if (!enabled) {
-                            sgsrRuntimeEnabled = false;
-                            logDeferredSGSRRestoreIfNeeded(wasEnabled || wasRuntimeEnabled);
-                        } else if (!wasEnabled) {
-                            sgsrRuntimeEnabled = canEnableSGSRLiveWithoutResize();
-                            if (sgsrRuntimeEnabled) {
-                                Log.i("SGSRResize", "SGSR enabled mid-session without XServer resize");
-                            } else {
-                                Log.i("SGSRResize", "SGSR enabled mid-session; live SGSR pass and render-size reduction are deferred until next launch");
-                            }
-                        }
-                        applyScreenEffects();
-                        renderDrawerMenu();
-                    }
-
-                    @Override
-                    public void onSGSRSharpnessChanged(int sharpness) {
-                        sgsrSharpness = Math.max(0, Math.min(100, sharpness));
-                        saveSGSRShortcutSettings();
-                        applyScreenEffects();
-                        renderDrawerMenu();
                     }
 
                     @Override
@@ -5780,77 +5736,11 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
                 memDetail));
     }
 
-    private void saveSGSRShortcutSettings() {
-        if (shortcut != null) {
-            if (sgsrEnabled) {
-                shortcut.putExtra("sgsrEnabled", "1");
-                shortcut.putExtra("sgsrUpscaleMode", String.valueOf(normalizeSGSRShortcutUpscaleMode(sgsrUpscaleMode)));
-                shortcut.putExtra("sgsrSharpness", String.valueOf(Math.max(0, Math.min(100, sgsrSharpness))));
-            } else {
-                shortcut.putExtra("sgsrEnabled", null);
-                shortcut.putExtra("sgsrUpscaleMode", null);
-                shortcut.putExtra("sgsrSharpness", null);
-            }
-            shortcut.saveData();
-        } else if (preferences != null) {
-            preferences.edit()
-                    .putBoolean("sgsr_enabled", sgsrEnabled)
-                    .putInt("sgsr_upscale_mode", clampSGSRUpscaleMode(sgsrUpscaleMode))
-                    .putInt("sgsr_sharpness", Math.max(0, Math.min(100, sgsrSharpness)))
-                    .apply();
-        }
-    }
-
-    private boolean canEnableSGSRLiveWithoutResize() {
-        if (xServer == null || sgsrBaseScreenSize == null || sgsrBaseScreenSize.isEmpty()) {
-            return false;
-        }
-
-        String targetScreenSize =
-                SGSRResolutionUtils.applyRenderScale(sgsrBaseScreenSize, true, sgsrUpscaleMode);
-        String currentScreenSize = xServer.screenInfo.toString();
-        boolean canEnable = targetScreenSize.equals(currentScreenSize);
-        if (!canEnable) {
-            Log.i("SGSRResize", "SGSR live enable blocked: current='" + currentScreenSize +
-                    "' target='" + targetScreenSize + "' base='" + sgsrBaseScreenSize +
-                    "' mode=" + sgsrUpscaleMode);
-        }
-        return canEnable;
-    }
-
-    private void logDeferredSGSRRestoreIfNeeded(boolean wasActive) {
-        if (!wasActive || xServer == null || sgsrBaseScreenSize == null || sgsrBaseScreenSize.isEmpty()) {
-            return;
-        }
-        final String currentScreenSize = xServer.screenInfo.toString();
-        if (!sgsrBaseScreenSize.equals(currentScreenSize)) {
-            Log.i("SGSRResize", "SGSR disabled mid-session; native XServer restore is deferred until next launch: current='" +
-                    currentScreenSize + "' base='" + sgsrBaseScreenSize + "' mode=" + sgsrUpscaleMode);
-        } else {
-            Log.i("SGSRResize", "SGSR disabled mid-session; XServer already at native size '" +
-                    currentScreenSize + "'");
-        }
-    }
-
     private void applyScreenEffects() {
         VulkanRenderer renderer = xServerView != null ? xServerView.getRenderer() : null;
         if (renderer == null) return;
         EffectComposer composer = renderer.getEffectComposer();
         if (composer == null) return;
-
-        SGSRUpscaler sgsr = composer.getEffect(SGSRUpscaler.class);
-        if (sgsrRuntimeEnabled) {
-            if (sgsr == null) {
-                sgsr = new SGSRUpscaler();
-            }
-            sgsr.setSharpness(sgsrSharpness / 100.0f);
-            composer.addEffectFirst(sgsr);
-            Log.d("XServerDisplayActivity", "SGSR active mode=" + sgsrUpscaleMode
-                    + " sharpness=" + sgsrSharpness);
-        } else if (sgsr != null) {
-            composer.removeEffect(sgsr);
-            Log.d("XServerDisplayActivity", "SGSR inactive");
-        }
 
         // Rebuilt in a fixed order each call so toggle sequence can't reorder the chain.
         composer.removeEffect(composer.getEffect(ColorAdjustEffect.class));
@@ -5923,22 +5813,6 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
 
     private void loadScreenEffectsSettings() {
         if (preferences == null) return;
-        boolean legacyEnabled = preferences.getBoolean("fsr_enabled", false);
-        int legacyMode = preferences.getInt("fsr_mode", 0);
-        int legacyStrength = preferences.getInt("fsr_sharpness", 100);
-        if (shortcut != null) {
-            sgsrEnabled = parseBoolean(shortcut.getExtra("sgsrEnabled", shortcut.getExtra("sgsr_enabled", "0")));
-            sgsrUpscaleMode = normalizeSGSRShortcutUpscaleMode(parsePositiveInt(
-                    shortcut.getExtra("sgsrUpscaleMode", shortcut.getExtra("sgsr_upscale_mode", "1"))));
-            sgsrSharpness = Math.max(0, Math.min(100, parsePositiveInt(
-                    shortcut.getExtra("sgsrSharpness", shortcut.getExtra("sgsr_sharpness", "100")))));
-        } else {
-            sgsrEnabled = preferences.contains("sgsr_enabled")
-                    ? preferences.getBoolean("sgsr_enabled", false)
-                    : legacyEnabled && legacyMode == 0;
-            sgsrUpscaleMode = clampSGSRUpscaleMode(preferences.getInt("sgsr_upscale_mode", 1));
-            sgsrSharpness = preferences.getInt("sgsr_sharpness", legacyStrength);
-        }
         loadScreenEffects();
     }
 

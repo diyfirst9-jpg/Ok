@@ -55,14 +55,6 @@ final class XServerDisplayUtils {
         return false;
     }
 
-    static int clampSGSRUpscaleMode(int mode) {
-        return SGSRResolutionUtils.clampUpscaleMode(mode);
-    }
-
-    static int normalizeSGSRShortcutUpscaleMode(int mode) {
-        return SGSRResolutionUtils.normalizeShortcutUpscaleMode(mode);
-    }
-
     static float clampHudAlpha(float v) {
         return Math.max(0.1f, Math.min(1.0f, v));
     }

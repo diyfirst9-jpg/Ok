@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.winlator.cmod.R
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import kotlin.math.roundToInt
 
 // State holder - Java-friendly mutable properties.
@@ -472,7 +472,7 @@ fun setupPreloaderComposeView(
         composeView.setViewTreeSavedStateRegistryOwner(activity)
     }
     composeView.setContent {
-        WinNativeTheme {
+        WinLiteTheme {
             PreloaderDialogContent(state)
         }
     }

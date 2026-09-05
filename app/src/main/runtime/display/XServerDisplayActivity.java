@@ -2636,7 +2636,7 @@ public class XServerDisplayActivity extends FixedFontScaleAppCompatActivity {
     }
 
     private String extractRelativeDriveCGameExecutablePath(String windowsPath, String source) {
-        String prefix = "C:\\WinNative\\Games\\" + source + "\\";
+        String prefix = "C:\\WinLite\\Games\\" + source + "\\";
         if (!windowsPath.regionMatches(true, 0, prefix, 0, prefix.length())) return null;
 
         String remainder = windowsPath.substring(prefix.length());

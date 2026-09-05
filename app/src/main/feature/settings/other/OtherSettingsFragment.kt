@@ -27,19 +27,17 @@ import androidx.preference.PreferenceManager
 import com.winlator.cmod.R
 import com.winlator.cmod.app.config.SettingsConfig
 import com.winlator.cmod.app.shell.UnifiedActivity
-import com.winlator.cmod.app.update.UpdateChecker
 import com.winlator.cmod.feature.shortcuts.FrontendExporter
 import com.winlator.cmod.feature.setup.SetupWizardActivity
 import com.winlator.cmod.runtime.audio.midi.MidiManager
 import com.winlator.cmod.runtime.display.environment.ImageFsInstaller
 import com.winlator.cmod.shared.ui.toast.WinToast
 import com.winlator.cmod.shared.android.DirectoryPickerDialog
-import com.winlator.cmod.shared.android.LocaleHelper
 import com.winlator.cmod.shared.android.RefreshRateUtils
 import com.winlator.cmod.shared.io.FileUtils
 import com.winlator.cmod.shared.ui.dialog.ContentDialog
 import com.winlator.cmod.shared.ui.dialog.PreloaderDialog
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import java.io.File
 
 class OtherSettingsFragment : Fragment() {
@@ -75,7 +73,7 @@ class OtherSettingsFragment : Fragment() {
         return ComposeView(ctx).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                WinNativeTheme(
+                WinLiteTheme(
                     colorScheme =
                         darkColorScheme(
                             primary = Color(0xFFFF7A00),
@@ -86,38 +84,6 @@ class OtherSettingsFragment : Fragment() {
                     OtherSettingsScreen(
                         bridge = (requireActivity() as? UnifiedActivity)?.settingsNavBridge,
                         state = uiState,
-                        onCheckForUpdatesChanged = { checked ->
-                            preferences.edit { putBoolean("check_for_updates", checked) }
-                            if (checked) {
-                                UpdateChecker.startBackgroundLoop(ctx)
-                            } else {
-                                UpdateChecker.stopBackgroundLoop()
-                                UpdateChecker.cancelPostGameCheck()
-                            }
-                            refresh()
-                        },
-                        onCheckForUpdatesNow = {
-                            val started = UpdateChecker.checkForUpdateManual(ctx)
-                            if (started) {
-                                WinToast.show(ctx, R.string.settings_other_checking_for_updates)
-                            } else {
-                                val seconds = UpdateChecker.manualCheckCooldownSeconds()
-                                WinToast.show(
-                                    ctx,
-                                    getString(R.string.settings_other_update_check_cooldown, seconds),
-                                )
-                            }
-                        },
-                        onLanguageSelected = { index ->
-                            val currentIndex =
-                                LocaleHelper.indexForTag(
-                                    LocaleHelper.getAppliedLanguageTag(),
-                                )
-                            if (index != currentIndex) {
-                                LocaleHelper.applyLanguageTag(LocaleHelper.tagForIndex(index))
-                                // AppCompatDelegate recreates attached activities automatically.
-                            }
-                        },
                         onSoundFontSelected = { index ->
                             // Selection is display-only; no persistence in legacy code.
                             uiState = uiState.copy(soundFontIndex = index)
@@ -196,14 +162,6 @@ class OtherSettingsFragment : Fragment() {
     private fun refresh() {
         val ctx = context ?: return
 
-        // Language entries: "System default" + native names, and currently-applied index
-        val languageLabels =
-            buildList {
-                add(getString(R.string.settings_other_language_system_default))
-                addAll(LocaleHelper.NATIVE_LANGUAGE_NAMES)
-            }
-        val languageIndex = LocaleHelper.indexForTag(LocaleHelper.getAppliedLanguageTag())
-
         // Sound font files
         val soundFontFiles = loadSoundFontFiles(ctx)
         val soundFontIndex = uiState.soundFontIndex.coerceIn(0, (soundFontFiles.size - 1).coerceAtLeast(0))
@@ -224,9 +182,6 @@ class OtherSettingsFragment : Fragment() {
 
         uiState =
             OtherSettingsState(
-                checkForUpdates = preferences.getBoolean("check_for_updates", false),
-                languageLabels = languageLabels,
-                languageIndex = languageIndex,
                 soundFontFiles = soundFontFiles,
                 soundFontIndex = soundFontIndex,
                 winlatorPath = winlatorPath,

@@ -12,7 +12,7 @@ import com.winlator.cmod.feature.stores.epic.service.EpicConstants
 import com.winlator.cmod.feature.stores.epic.ui.component.dialog.AuthWebViewDialog
 import com.winlator.cmod.feature.stores.steam.utils.redactUrlForLogging
 import com.winlator.cmod.shared.android.FixedFontScaleComponentActivity
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import timber.log.Timber
 
 // Captures Epic OAuth codes from redirect URLs or the JSON redirect body.
@@ -58,7 +58,7 @@ class EpicOAuthActivity : FixedFontScaleComponentActivity() {
         initialAuthUrl = authUrl
 
         setContent {
-            WinNativeTheme(colorScheme = darkColorScheme()) {
+            WinLiteTheme(colorScheme = darkColorScheme()) {
                 AuthWebViewDialog(
                     isVisible = true,
                     url = authUrl,

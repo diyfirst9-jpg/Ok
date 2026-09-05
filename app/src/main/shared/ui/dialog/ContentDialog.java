@@ -218,7 +218,7 @@ public class ContentDialog extends Dialog {
   }
 
   public static void alert(Context context, int msgResId, Runnable callback) {
-    if (WinNativeComposeDialogs.showAlert(context, context.getString(msgResId), callback)) return;
+    if (WinLiteComposeDialogs.showAlert(context, context.getString(msgResId), callback)) return;
     ContentDialog dialog = new ContentDialog(context);
     dialog.setMessage(msgResId);
     dialog.setOnConfirmCallback(callback);
@@ -227,7 +227,7 @@ public class ContentDialog extends Dialog {
   }
 
   public static void alert(Context context, String msg, Runnable callback) {
-    if (WinNativeComposeDialogs.showAlert(context, msg, callback)) return;
+    if (WinLiteComposeDialogs.showAlert(context, msg, callback)) return;
     ContentDialog dialog = new ContentDialog(context);
     dialog.setMessage(msg);
     dialog.setOnConfirmCallback(callback);
@@ -236,7 +236,7 @@ public class ContentDialog extends Dialog {
   }
 
   public static void confirm(Context context, int msgResId, Runnable callback) {
-    if (WinNativeComposeDialogs.showConfirm(context, context.getString(msgResId), callback)) return;
+    if (WinLiteComposeDialogs.showConfirm(context, context.getString(msgResId), callback)) return;
     ContentDialog dialog = new ContentDialog(context);
     dialog.setMessage(msgResId);
     dialog.setOnConfirmCallback(callback);
@@ -244,7 +244,7 @@ public class ContentDialog extends Dialog {
   }
 
   public static void confirm(Context context, String msg, Runnable callback) {
-    if (WinNativeComposeDialogs.showConfirm(context, msg, callback)) return;
+    if (WinLiteComposeDialogs.showConfirm(context, msg, callback)) return;
     ContentDialog dialog = new ContentDialog(context);
     dialog.setMessage(msg);
     dialog.setOnConfirmCallback(callback);
@@ -253,7 +253,7 @@ public class ContentDialog extends Dialog {
 
   public static void prompt(
       Context context, int titleResId, String defaultText, Callback<String> callback) {
-    if (WinNativeComposeDialogs.showPrompt(
+    if (WinLiteComposeDialogs.showPrompt(
         context, context.getString(titleResId), defaultText, callback)) return;
     ContentDialog dialog = new ContentDialog(context);
 

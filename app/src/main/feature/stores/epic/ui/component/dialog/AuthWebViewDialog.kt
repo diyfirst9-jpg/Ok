@@ -35,7 +35,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.winlator.cmod.R
 import com.winlator.cmod.feature.stores.steam.utils.redactUrlForLogging
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -214,7 +214,7 @@ fun AuthWebViewDialog(
 @Preview
 @Composable
 private fun Preview_AuthWebView() {
-    WinNativeTheme(colorScheme = darkColorScheme()) {
+    WinLiteTheme(colorScheme = darkColorScheme()) {
         AuthWebViewDialog(
             isVisible = true,
             url = "https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=galaxy",

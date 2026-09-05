@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.preference.PreferenceManager
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import com.winlator.cmod.shared.util.Callback
 import kotlin.math.roundToInt
 
@@ -73,7 +73,7 @@ class MagnifierView
                     androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnDetachedFromWindow,
                 )
                 setContent {
-                    WinNativeTheme {
+                    WinLiteTheme {
                         MagnifierPanel(
                             initialZoom = currentZoom,
                             registerZoomSetter = { zoomState = it },

@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
 import android.util.Log
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -75,6 +74,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -113,7 +113,7 @@ import com.winlator.cmod.runtime.display.environment.ImageFsInstaller
 import com.winlator.cmod.runtime.wine.WineInfo
 import com.winlator.cmod.shared.ui.toast.WinToast
 import com.winlator.cmod.shared.android.FixedFontScaleFragmentActivity
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withPermit
@@ -842,10 +842,9 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.clearFlags(
-            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION or
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
-        )
+        // Overlay window: fully transparent so Compose draws the dim scrim + floating
+        // card itself, and system bars stay edge-to-edge behind it.
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
@@ -876,7 +875,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
         loadAdvancedProfiles()
 
         setContent {
-            WinNativeTheme(
+            WinLiteTheme(
                 colorScheme =
                     darkColorScheme(
                         primary = Color(0xFFFF7A00),
@@ -1090,7 +1089,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                         ),
                     )
                 }
-            val success = Downloader.downloadFileWinNativeFirst(url, output, listener)
+            val success = Downloader.downloadFileWinLiteFirst(url, output, listener)
             if (success) output else null
         }
 
@@ -1614,19 +1613,43 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
             }
         }
 
-        // Plain static background — no per-frame drawing, no animation.
+        // Dimmed scrim behind the floating card. Fills the whole window edge-to-edge and
+        // swallows outside taps (the wizard is not dismissible by tapping out).
         Box(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF000000)),
+                    .background(Color(0xB0000000))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                    ) {},
+            contentAlignment = Alignment.Center,
         ) {
+            // The floating card itself: capped width/height so it reads as an overlay
+            // window rather than a fullscreen page, with its own rounded surface + border.
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(0.94f)
+                        .widthIn(max = 560.dp)
+                        .fillMaxHeight(0.9f)
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .shadow(elevation = 24.dp, shape = RoundedCornerShape(20.dp), clip = false)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFF10141B))
+                        .border(BorderStroke(1.dp, Color(0xFF222D3D)), RoundedCornerShape(20.dp))
+                        // Absorb clicks so they don't fall through to the scrim behind the card.
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                        ) {},
+            ) {
             Column(
                 modifier =
                     Modifier
                         .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.safeDrawing)
-                        .padding(horizontal = 18.dp, vertical = 12.dp),
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1634,14 +1657,14 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "WinNative",
+                            text = "WinLite",
                             color = Color(0xFFE6EDF3),
                             fontFamily = SyncopateFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             letterSpacing = 1.sp,
                         )
-                        Spacer(Modifier.height(3.dp))
+                        Spacer(Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = stringResource(R.string.setup_wizard_title).uppercase(),
@@ -1651,16 +1674,8 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                                 fontSize = 9.sp,
                                 letterSpacing = 1.5.sp,
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(3.dp)
-                                        .background(Color(0xFF4A3F30), RoundedCornerShape(2.dp)),
-                            )
-                            Spacer(Modifier.width(8.dp))
                             Text(
-                                text = pageTitle,
+                                text = " · $pageTitle",
                                 color = Color(0xFF8B949E),
                                 fontFamily = InterFont,
                                 fontWeight = FontWeight.Medium,
@@ -1670,10 +1685,11 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                             )
                         }
                     }
+                    Spacer(Modifier.width(12.dp))
                     StepIndicator(current = page, total = totalPages)
                 }
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(16.dp))
                 Box(
                     modifier =
                         Modifier
@@ -1681,7 +1697,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                             .height(1.dp)
                             .background(Color(0xFF222D3D)),
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
 
                 BoxWithConstraints(
                     modifier =
@@ -1721,7 +1737,7 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 }
 
                 val transferActive = transferState.value != null
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1753,18 +1769,18 @@ class SetupWizardActivity : FixedFontScaleFragmentActivity() {
                 }
             }
 
-            // Transfer strip — floats at bottom, outside the Column
-            val transfer = transferState.value
-            if (transfer != null) {
-                Box(
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.safeDrawing)
-                            .padding(horizontal = 18.dp, vertical = 12.dp),
-                ) {
-                    TransferStrip(transfer)
+                // Transfer strip — floats at the bottom of the card, outside the Column.
+                val transfer = transferState.value
+                if (transfer != null) {
+                    Box(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 16.dp),
+                    ) {
+                        TransferStrip(transfer)
+                    }
                 }
             }
         }

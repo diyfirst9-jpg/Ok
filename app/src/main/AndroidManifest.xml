@@ -59,7 +59,7 @@
         <!-- Setup Wizard (first launch entry point) -->
         <activity
             android:name="com.winlator.cmod.feature.setup.SetupWizardActivity"
-            android:theme="@style/AppThemeFullscreenDarkNoAnimation"
+            android:theme="@style/AppThemeSetupOverlayDarkNoAnimation"
             android:screenOrientation="unspecified"
             android:exported="false"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|density|navigation" />
@@ -224,7 +224,7 @@
             android:name="com.winlator.cmod.feature.stores.steam.service.HybridModeReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.winnative.cmod.action.HYBRID_MODE" />
+                <action android:name="com.winlite.cmod.action.HYBRID_MODE" />
             </intent-filter>
         </receiver>
 

@@ -36,12 +36,12 @@ private val CreditsText = Color(0xFFF5F0EA)
 private val CreditsSub = Color(0xFFC7A88F)
 
 /**
- * Credits screen for WinNative's PC/Windows compatibility layer components
+ * Credits screen for WinLite's PC/Windows compatibility layer components
  * (Wine, Box86/64, FEX, drivers, etc). The console/retro emulator credits
  * screen was removed along with that feature set.
  */
 @Composable
-fun WinNativeCreditsScreen(bridge: SettingsNavBridge? = null) {
+fun WinLiteCreditsScreen(bridge: SettingsNavBridge? = null) {
     SmoothScreenTransition {
 
     val context = LocalContext.current
@@ -104,7 +104,7 @@ fun WinNativeCreditsScreen(bridge: SettingsNavBridge? = null) {
 
     }}
 
-internal data class WinNativeCredit(
+internal data class WinLiteCredit(
     val name: String,
     val detail: String,
     val license: String,
@@ -113,12 +113,12 @@ internal data class WinNativeCredit(
 
 internal val WINNATIVE_CREDITS =
     listOf(
-        WinNativeCredit("Wine", "Windows compatibility layer", "LGPL-2.1", "https://gitlab.winehq.org/wine/wine"),
-        WinNativeCredit("Box86/Box64", "x86/x86_64 dynarec", "MIT", "https://github.com/ptitSeb/box64"),
-        WinNativeCredit("FEX-Emu", "x86/x86_64 emulation core", "MIT", "https://github.com/FEX-Emu/FEX"),
-        WinNativeCredit("Winlator", "Windows-on-Android base", "GPL-3.0", "https://github.com/brunodev85/winlator"),
-        WinNativeCredit("adrenotools", "GPU driver loading", "MIT", "https://github.com/Pipetto-crypto/libadrenotools"),
-        WinNativeCredit("vkBasalt", "Vulkan post-processing", "MIT", "https://github.com/WinNative-Emu/vkBasalt"),
-        WinNativeCredit("DXVK / VKD3D-Proton", "DirectX-to-Vulkan translation", "zlib / LGPL-2.1", "https://github.com/doitsujin/dxvk"),
-        WinNativeCredit("proot", "Sandboxed rootfs execution", "GPL-2.0", "https://github.com/proot-me/proot"),
+        WinLiteCredit("Wine", "Windows compatibility layer", "LGPL-2.1", "https://gitlab.winehq.org/wine/wine"),
+        WinLiteCredit("Box86/Box64", "x86/x86_64 dynarec", "MIT", "https://github.com/ptitSeb/box64"),
+        WinLiteCredit("FEX-Emu", "x86/x86_64 emulation core", "MIT", "https://github.com/FEX-Emu/FEX"),
+        WinLiteCredit("Winlator", "Windows-on-Android base", "GPL-3.0", "https://github.com/brunodev85/winlator"),
+        WinLiteCredit("adrenotools", "GPU driver loading", "MIT", "https://github.com/Pipetto-crypto/libadrenotools"),
+        WinLiteCredit("vkBasalt", "Vulkan post-processing", "MIT", "https://github.com/WinNative-Emu/vkBasalt"),
+        WinLiteCredit("DXVK / VKD3D-Proton", "DirectX-to-Vulkan translation", "zlib / LGPL-2.1", "https://github.com/doitsujin/dxvk"),
+        WinLiteCredit("proot", "Sandboxed rootfs execution", "GPL-2.0", "https://github.com/proot-me/proot"),
     )

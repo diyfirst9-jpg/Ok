@@ -10,7 +10,7 @@ import com.winlator.cmod.feature.stores.epic.ui.component.dialog.AuthWebViewDial
 import com.winlator.cmod.feature.stores.gog.service.GOGConstants
 import com.winlator.cmod.feature.stores.steam.utils.redactUrlForLogging
 import com.winlator.cmod.shared.android.FixedFontScaleComponentActivity
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import timber.log.Timber
 
 /**
@@ -54,7 +54,7 @@ class GOGOAuthActivity : FixedFontScaleComponentActivity() {
         initialAuthUrl = authUrl
 
         setContent {
-            WinNativeTheme(colorScheme = darkColorScheme()) {
+            WinLiteTheme(colorScheme = darkColorScheme()) {
                 AuthWebViewDialog(
                     isVisible = true,
                     url = authUrl,

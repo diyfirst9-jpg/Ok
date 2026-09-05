@@ -24,7 +24,7 @@ import com.winlator.cmod.runtime.content.AdrenotoolsManager
 import com.winlator.cmod.runtime.content.Downloader
 import com.winlator.cmod.shared.ui.toast.WinToast
 import com.winlator.cmod.shared.android.DirectoryPickerDialog
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,7 +80,7 @@ class DriversFragment : Fragment() {
         return ComposeView(ctx).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                WinNativeTheme(
+                WinLiteTheme(
                     colorScheme =
                         darkColorScheme(
                             primary = Color(0xFFFF7A00),
@@ -340,7 +340,7 @@ class DriversFragment : Fragment() {
                 connectTimeout = 15000
                 readTimeout = 15000
                 setRequestProperty("Accept", "application/vnd.github+json")
-                setRequestProperty("User-Agent", "WinNative")
+                setRequestProperty("User-Agent", "WinLite")
             }
 
         return connection.useResponse { responseText ->
@@ -588,7 +588,7 @@ class DriversFragment : Fragment() {
     }
 
     companion object {
-        private const val WINNATIVE_COMPONENTS_REPO_NAME = "WinNative Components"
+        private const val WINNATIVE_COMPONENTS_REPO_NAME = "WinLite Components"
         private const val WINNATIVE_COMPONENTS_REPO_URL = "https://github.com/nicholasx417/WinNative-Components/releases"
         private const val WINNATIVE_COMPONENTS_API_URL = "https://api.github.com/repos/nicholasx417/WinNative-Components/releases"
     }

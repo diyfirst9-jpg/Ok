@@ -52,15 +52,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.winlator.cmod.R
-import com.winlator.cmod.shared.theme.WinNativeAccent
-import com.winlator.cmod.shared.theme.WinNativeBackground
-import com.winlator.cmod.shared.theme.WinNativeDanger
-import com.winlator.cmod.shared.theme.WinNativeOutline
-import com.winlator.cmod.shared.theme.WinNativePanel
-import com.winlator.cmod.shared.theme.WinNativeSurface
-import com.winlator.cmod.shared.theme.WinNativeTextPrimary
-import com.winlator.cmod.shared.theme.WinNativeTextSecondary
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteAccent
+import com.winlator.cmod.shared.theme.WinLiteBackground
+import com.winlator.cmod.shared.theme.WinLiteDanger
+import com.winlator.cmod.shared.theme.WinLiteOutline
+import com.winlator.cmod.shared.theme.WinLitePanel
+import com.winlator.cmod.shared.theme.WinLiteSurface
+import com.winlator.cmod.shared.theme.WinLiteTextPrimary
+import com.winlator.cmod.shared.theme.WinLiteTextSecondary
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import com.winlator.cmod.shared.util.Callback
 import androidx.compose.ui.window.Dialog as ComposeDialog
 
@@ -70,7 +70,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.window.DialogProperties as ComposeDialogProperties
 
-object WinNativeComposeDialogs {
+object WinLiteComposeDialogs {
     @JvmStatic
     fun showLoading(
         context: Context,
@@ -83,8 +83,8 @@ object WinNativeComposeDialogs {
         }
         dialog.setContentView(
             composeView(activity) {
-                WinNativeTheme {
-                    WinNativeLoadingDialog(message = message)
+                WinLiteTheme {
+                    WinLiteLoadingDialog(message = message)
                 }
             },
         )
@@ -102,12 +102,12 @@ object WinNativeComposeDialogs {
         val dialog = buildDialog(activity)
         dialog.setContentView(
             composeView(activity) {
-                WinNativeTheme {
-                    WinNativeMessageDialog(
+                WinLiteTheme {
+                    WinLiteMessageDialog(
                         title = null,
                         message = message?.toString().orEmpty(),
                         confirmLabel = activity.getString(R.string.common_ui_ok),
-                        confirmColor = WinNativeAccent,
+                        confirmColor = WinLiteAccent,
                         showCancel = false,
                         onDismiss = { dialog.dismiss() },
                         onConfirm = {
@@ -132,12 +132,12 @@ object WinNativeComposeDialogs {
         val dialog = buildDialog(activity)
         dialog.setContentView(
             composeView(activity) {
-                WinNativeTheme {
-                    WinNativeMessageDialog(
+                WinLiteTheme {
+                    WinLiteMessageDialog(
                         title = null,
                         message = message?.toString().orEmpty(),
                         confirmLabel = activity.getString(R.string.common_ui_ok),
-                        confirmColor = WinNativeAccent,
+                        confirmColor = WinLiteAccent,
                         showCancel = true,
                         onDismiss = { dialog.dismiss() },
                         onConfirm = {
@@ -168,8 +168,8 @@ object WinNativeComposeDialogs {
         }
         dialog.setContentView(
             composeView(activity) {
-                WinNativeTheme {
-                    WinNativePromptDialog(
+                WinLiteTheme {
+                    WinLitePromptDialog(
                         title = title?.toString().orEmpty(),
                         initialValue = defaultText.orEmpty(),
                         onDismiss = { dialog.dismiss() },
@@ -196,8 +196,8 @@ object WinNativeComposeDialogs {
         val dialog = buildDialog(activity)
         dialog.setContentView(
             composeView(activity) {
-                WinNativeTheme {
-                    WinNativeShortcutPropertiesDialog(
+                WinLiteTheme {
+                    WinLiteShortcutPropertiesDialog(
                         title = activity.getString(R.string.common_ui_properties),
                         playCountText = playCountText,
                         playtimeText = playtimeText,
@@ -238,7 +238,7 @@ internal tailrec fun Context.findActivity(): Activity? =
     }
 
 @Composable
-fun WinNativeDialogShell(
+fun WinLiteDialogShell(
     onDismiss: () -> Unit,
     title: String? = null,
     iconRes: Int? = null,
@@ -271,8 +271,8 @@ fun WinNativeDialogShell(
                         .fillMaxWidth()
                         .heightIn(max = maxHeight)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(WinNativeSurface)
-                        .border(1.dp, WinNativeOutline, RoundedCornerShape(16.dp))
+                        .background(WinLiteSurface)
+                        .border(1.dp, WinLiteOutline, RoundedCornerShape(16.dp))
                         .padding(contentPadding),
             ) {
                 Column(
@@ -287,14 +287,14 @@ fun WinNativeDialogShell(
                                 Icon(
                                     imageVector = iconImage,
                                     contentDescription = null,
-                                    tint = WinNativeTextPrimary,
+                                    tint = WinLiteTextPrimary,
                                     modifier = Modifier.size(22.dp),
                                 )
                             } else if (iconRes != null) {
                                 Icon(
                                     painter = painterResource(iconRes),
                                     contentDescription = null,
-                                    tint = WinNativeTextPrimary,
+                                    tint = WinLiteTextPrimary,
                                     modifier = Modifier.size(22.dp),
                                 )
                             }
@@ -304,7 +304,7 @@ fun WinNativeDialogShell(
                             }
                             Text(
                                 text = title,
-                                color = WinNativeTextPrimary,
+                                color = WinLiteTextPrimary,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                             )
@@ -315,7 +315,7 @@ fun WinNativeDialogShell(
                                 Modifier
                                     .fillMaxWidth()
                                     .height(1.dp)
-                                    .background(WinNativeOutline),
+                                    .background(WinLiteOutline),
                         )
                         Spacer(Modifier.height(14.dp))
                     }
@@ -327,12 +327,12 @@ fun WinNativeDialogShell(
 }
 
 @Composable
-fun WinNativeDialogButton(
+fun WinLiteDialogButton(
     label: String,
     textColor: Color,
     onClick: () -> Unit,
-    backgroundColor: Color = WinNativePanel,
-    borderColor: Color = WinNativeOutline,
+    backgroundColor: Color = WinLitePanel,
+    borderColor: Color = WinLiteOutline,
 ) {
     Box(
         modifier =
@@ -358,7 +358,7 @@ fun WinNativeDialogButton(
 }
 
 @Composable
-private fun WinNativeMessageDialog(
+private fun WinLiteMessageDialog(
     title: String?,
     message: String,
     confirmLabel: String,
@@ -367,14 +367,14 @@ private fun WinNativeMessageDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    WinNativeDialogShell(
+    WinLiteDialogShell(
         onDismiss = onDismiss,
         title = title,
         maxWidth = 420.dp,
     ) {
         Text(
             text = message,
-            color = WinNativeTextSecondary,
+            color = WinLiteTextSecondary,
             fontSize = 14.sp,
             lineHeight = 20.sp,
         )
@@ -384,7 +384,7 @@ private fun WinNativeMessageDialog(
                 Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(WinNativeOutline),
+                    .background(WinLiteOutline),
         )
         Spacer(Modifier.height(16.dp))
         Row(
@@ -392,13 +392,13 @@ private fun WinNativeMessageDialog(
             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
         ) {
             if (showCancel) {
-                WinNativeDialogButton(
+                WinLiteDialogButton(
                     label = stringResource(R.string.common_ui_cancel),
-                    textColor = WinNativeTextPrimary,
+                    textColor = WinLiteTextPrimary,
                     onClick = onDismiss,
                 )
             }
-            WinNativeDialogButton(
+            WinLiteDialogButton(
                 label = confirmLabel,
                 textColor = confirmColor,
                 backgroundColor = confirmColor.copy(alpha = 0.12f),
@@ -410,7 +410,7 @@ private fun WinNativeMessageDialog(
 }
 
 @Composable
-private fun WinNativePromptDialog(
+private fun WinLitePromptDialog(
     title: String,
     initialValue: String,
     onDismiss: () -> Unit,
@@ -418,7 +418,7 @@ private fun WinNativePromptDialog(
 ) {
     var value by rememberSaveable { mutableStateOf(initialValue) }
 
-    WinNativeDialogShell(
+    WinLiteDialogShell(
         onDismiss = onDismiss,
         title = title,
         maxWidth = 420.dp,
@@ -430,19 +430,19 @@ private fun WinNativePromptDialog(
             singleLine = true,
             textStyle =
                 androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(
-                    color = WinNativeTextPrimary,
+                    color = WinLiteTextPrimary,
                 ),
             colors =
                 OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = WinNativeAccent,
-                    unfocusedBorderColor = WinNativeOutline,
-                    focusedTextColor = WinNativeTextPrimary,
-                    unfocusedTextColor = WinNativeTextPrimary,
-                    focusedContainerColor = WinNativeBackground,
-                    unfocusedContainerColor = WinNativeBackground,
-                    focusedLabelColor = WinNativeTextSecondary,
-                    unfocusedLabelColor = WinNativeTextSecondary,
-                    cursorColor = WinNativeAccent,
+                    focusedBorderColor = WinLiteAccent,
+                    unfocusedBorderColor = WinLiteOutline,
+                    focusedTextColor = WinLiteTextPrimary,
+                    unfocusedTextColor = WinLiteTextPrimary,
+                    focusedContainerColor = WinLiteBackground,
+                    unfocusedContainerColor = WinLiteBackground,
+                    focusedLabelColor = WinLiteTextSecondary,
+                    unfocusedLabelColor = WinLiteTextSecondary,
+                    cursorColor = WinLiteAccent,
                 ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         )
@@ -452,23 +452,23 @@ private fun WinNativePromptDialog(
                 Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(WinNativeOutline),
+                    .background(WinLiteOutline),
         )
         Spacer(Modifier.height(16.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
         ) {
-            WinNativeDialogButton(
+            WinLiteDialogButton(
                 label = stringResource(R.string.common_ui_cancel),
-                textColor = WinNativeTextPrimary,
+                textColor = WinLiteTextPrimary,
                 onClick = onDismiss,
             )
-            WinNativeDialogButton(
+            WinLiteDialogButton(
                 label = stringResource(R.string.common_ui_ok),
-                textColor = WinNativeAccent,
-                backgroundColor = WinNativeAccent.copy(alpha = 0.12f),
-                borderColor = WinNativeAccent.copy(alpha = 0.3f),
+                textColor = WinLiteAccent,
+                backgroundColor = WinLiteAccent.copy(alpha = 0.12f),
+                borderColor = WinLiteAccent.copy(alpha = 0.3f),
                 onClick = {
                     val trimmed = value.trim()
                     if (trimmed.isNotEmpty()) {
@@ -481,14 +481,14 @@ private fun WinNativePromptDialog(
 }
 
 @Composable
-private fun WinNativeShortcutPropertiesDialog(
+private fun WinLiteShortcutPropertiesDialog(
     title: String,
     playCountText: String,
     playtimeText: String,
     onDismiss: () -> Unit,
     onReset: () -> Unit,
 ) {
-    WinNativeDialogShell(
+    WinLiteDialogShell(
         onDismiss = onDismiss,
         title = title,
         maxWidth = 420.dp,
@@ -499,30 +499,30 @@ private fun WinNativeShortcutPropertiesDialog(
         ) {
             Text(
                 text = playCountText,
-                color = WinNativeTextPrimary,
+                color = WinLiteTextPrimary,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
             )
             Text(
                 text = playtimeText,
-                color = WinNativeTextPrimary,
+                color = WinLiteTextPrimary,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
             )
         }
         Spacer(Modifier.height(16.dp))
-        WinNativeDialogButton(
+        WinLiteDialogButton(
             label = stringResource(R.string.shortcuts_properties_reset),
-            textColor = WinNativeDanger,
-            backgroundColor = WinNativeDanger.copy(alpha = 0.12f),
-            borderColor = WinNativeDanger.copy(alpha = 0.3f),
+            textColor = WinLiteDanger,
+            backgroundColor = WinLiteDanger.copy(alpha = 0.12f),
+            borderColor = WinLiteDanger.copy(alpha = 0.3f),
             onClick = onReset,
         )
     }
 }
 
 @Composable
-private fun WinNativeLoadingDialog(message: String) {
+private fun WinLiteLoadingDialog(message: String) {
     ComposeDialog(
         onDismissRequest = {},
         properties = ComposeDialogProperties(
@@ -542,8 +542,8 @@ private fun WinNativeLoadingDialog(message: String) {
                     .widthIn(max = 420.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(WinNativeSurface)
-                    .border(1.dp, WinNativeOutline, RoundedCornerShape(14.dp))
+                    .background(WinLiteSurface)
+                    .border(1.dp, WinLiteOutline, RoundedCornerShape(14.dp))
                     .padding(horizontal = 18.dp, vertical = 14.dp)
             ) {
                 Row(
@@ -552,13 +552,13 @@ private fun WinNativeLoadingDialog(message: String) {
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = WinNativeAccent,
+                        color = WinLiteAccent,
                         strokeWidth = 2.5.dp,
                         strokeCap = StrokeCap.Round
                     )
                     Text(
                         text = message,
-                        color = WinNativeTextPrimary,
+                        color = WinLiteTextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )

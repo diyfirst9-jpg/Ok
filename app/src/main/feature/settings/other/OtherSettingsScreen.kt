@@ -32,7 +32,6 @@ import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.Monitor
 import androidx.compose.material.icons.outlined.Mouse
@@ -40,7 +39,6 @@ import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.SportsEsports
-import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -97,9 +95,6 @@ private const val SettingsSliderTrackScaleY = 0.72f
 
 // State
 data class OtherSettingsState(
-    val checkForUpdates: Boolean = true,
-    val languageLabels: List<String> = emptyList(),
-    val languageIndex: Int = 0,
     val soundFontFiles: List<String> = emptyList(),
     val soundFontIndex: Int = 0,
     val winlatorPath: String = "",
@@ -139,9 +134,6 @@ private fun SettingsSliderTrack(sliderState: SliderState) {
 @Composable
 fun OtherSettingsScreen(
     state: OtherSettingsState,
-    onCheckForUpdatesChanged: (Boolean) -> Unit,
-    onCheckForUpdatesNow: () -> Unit,
-    onLanguageSelected: (Int) -> Unit,
     onSoundFontSelected: (Int) -> Unit,
     onInstallSoundFont: () -> Unit,
     onRemoveSoundFont: () -> Unit,
@@ -199,23 +191,6 @@ fun OtherSettingsScreen(
                     ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SectionLabel(stringResource(R.string.common_ui_application))
-
-            UpdatesCard(
-                checked = state.checkForUpdates,
-                onCheckedChange = onCheckForUpdatesChanged,
-                onCheckNow = onCheckForUpdatesNow,
-            )
-
-            SettingsDropdownCard(
-                title = stringResource(R.string.settings_other_language_title),
-                subtitle = stringResource(R.string.settings_other_language_summary),
-                icon = Icons.Outlined.Language,
-                options = state.languageLabels,
-                selectedIndex = state.languageIndex,
-                onOptionSelected = onLanguageSelected,
-            )
-
             SectionLabel(stringResource(R.string.settings_audio_sound), modifier = Modifier.padding(top = 8.dp))
 
             SoundFontCard(
@@ -408,204 +383,6 @@ private fun SettingsToggleCard(
     }
 }
 
-@Composable
-private fun UpdatesCard(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    onCheckNow: () -> Unit,
-) {
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
-                .paneNavItem(
-                    cornerRadius = 12.dp,
-                    onActivate = { onCheckedChange(!checked) },
-                    highlightColor = NavHighlight,
-                    tapToSelect = true,
-                ),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.SystemUpdate,
-                    contentDescription = null,
-                    tint = Accent,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
-            Spacer(Modifier.width(13.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.settings_general_check_for_updates),
-                    color = TextPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = stringResource(R.string.settings_general_check_for_updates_summary),
-                    color = TextSecondary,
-                    fontSize = 11.sp,
-                )
-            }
-            Spacer(Modifier.width(8.dp))
-            SmallActionButton(label = stringResource(R.string.common_ui_check), textColor = Accent, onClick = onCheckNow)
-            Spacer(Modifier.width(6.dp))
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                modifier = Modifier.scale(0.78f),
-                colors =
-                    outlinedSwitchColors(
-                        accentColor = Accent,
-                        textSecondaryColor = TextSecondary,
-                    ),
-            )
-        }
-    }
-}
-
-// Generic dropdown card (labels list + index selection)
-@Composable
-private fun SettingsDropdownCard(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    options: List<String>,
-    selectedIndex: Int,
-    onOptionSelected: (Int) -> Unit,
-    accentColor: Color = Accent,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val safeIndex = selectedIndex.coerceIn(0, (options.size - 1).coerceAtLeast(0))
-    val selectedLabel = options.getOrNull(safeIndex) ?: ""
-
-    Box(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(CardDark)
-                .border(1.dp, CardBorder, RoundedCornerShape(12.dp)),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(IconBoxBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(17.dp),
-                )
-            }
-            Spacer(Modifier.width(13.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(subtitle, color = TextSecondary, fontSize = 11.sp)
-            }
-            Spacer(Modifier.width(8.dp))
-            Box {
-                Row(
-                    modifier =
-                        Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF222232))
-                            .border(1.dp, accentColor.copy(alpha = 0.30f), RoundedCornerShape(8.dp))
-                            .paneNavItem(
-                                cornerRadius = 8.dp,
-                                onActivate = { if (options.isNotEmpty()) expanded = true },
-                                highlightColor = NavHighlight,
-                                tapToSelect = true,
-                            ).padding(horizontal = 10.dp, vertical = 7.dp)
-                            .widthIn(max = 180.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        text = selectedLabel,
-                        color = accentColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(14.dp),
-                    )
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    shape = RoundedCornerShape(8.dp),
-                    containerColor = Color(0xFF161616),
-                    border = BorderStroke(1.dp, CardBorder),
-                    modifier = Modifier.widthIn(max = 260.dp),
-                ) {
-                    Column(
-                        modifier =
-                            Modifier
-                                .heightIn(max = 260.dp)
-                                .verticalScroll(rememberScrollState()),
-                    ) {
-                        options.forEachIndexed { index, label ->
-                            val isSelected = index == safeIndex
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = label,
-                                        color = if (isSelected) accentColor else TextPrimary,
-                                        fontSize = 13.sp,
-                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                        softWrap = true,
-                                    )
-                                },
-                                onClick = {
-                                    onOptionSelected(index)
-                                    expanded = false
-                                },
-                                modifier =
-                                    Modifier.background(
-                                        if (isSelected) accentColor.copy(alpha = 0.08f) else Color.Transparent,
-                                    ),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 // SoundFont card: dropdown + Install + Remove
 @Composable

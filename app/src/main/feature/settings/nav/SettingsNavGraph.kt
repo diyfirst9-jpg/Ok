@@ -342,7 +342,7 @@ private fun SettingsContentNavHost(
             AndroidFragment<OtherSettingsFragment>()
         }
         composable(SettingsRoutes.fromNavItem(SettingsNavItem.CREDITS)) {
-            com.winlator.cmod.feature.settings.WinNativeCreditsScreen(bridge = bridge)
+            com.winlator.cmod.feature.settings.WinLiteCreditsScreen(bridge = bridge)
         }
     }
 }

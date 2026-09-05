@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.winlator.cmod.R
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import com.winlator.cmod.shared.ui.nav.LocalPaneNav
 import com.winlator.cmod.shared.ui.nav.PaneNavRegistry
 import com.winlator.cmod.shared.ui.nav.bindPaneNav
@@ -107,7 +107,7 @@ object EpicCloudConflictDialog {
                     setViewTreeSavedStateRegistryOwner(it)
                 }
                 setContent {
-                    WinNativeTheme(
+                    WinLiteTheme(
                         colorScheme =
                             darkColorScheme(
                                 primary = EpicCloudConflictBlue,

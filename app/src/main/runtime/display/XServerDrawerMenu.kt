@@ -177,9 +177,9 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.winlator.cmod.R
 import com.winlator.cmod.shared.theme.SessionDrawerStyle
-import com.winlator.cmod.shared.theme.WinNativeTheme
-import com.winlator.cmod.shared.ui.dialog.WinNativeDialogButton
-import com.winlator.cmod.shared.ui.dialog.WinNativeDialogShell
+import com.winlator.cmod.shared.theme.WinLiteTheme
+import com.winlator.cmod.shared.ui.dialog.WinLiteDialogButton
+import com.winlator.cmod.shared.ui.dialog.WinLiteDialogShell
 import com.winlator.cmod.shared.ui.nav.DialogPaneNav
 import com.winlator.cmod.shared.ui.nav.LocalPaneNav as SharedLocalPaneNav
 import com.winlator.cmod.shared.ui.nav.PaneNavRegistry as SharedPaneNavRegistry
@@ -1466,7 +1466,7 @@ fun setupXServerDrawerComposeView(
     stateHolder.setPaneVisibilityListener(onPaneVisibilityChanged)
     composeView.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     composeView.setContent {
-        WinNativeTheme {
+        WinLiteTheme {
             XServerDrawerContent(
                 state = stateHolder.state,
                 taskManagerState = stateHolder.taskManagerState,

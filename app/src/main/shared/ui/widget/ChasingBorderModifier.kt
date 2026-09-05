@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.winlator.cmod.shared.theme.WinNativeAccent
+import com.winlator.cmod.shared.theme.WinLiteAccent
 
 /**
  * Compose modifier that draws a flat, single-color focus border.
@@ -44,7 +44,7 @@ fun Modifier.chasingBorder(
         val density = LocalDensity.current.density
         val cornerRadiusPx = cornerRadius.value * density
         val borderWidthPx = borderWidth.value * density
-        val borderColorArgb = WinNativeAccent.toArgb()
+        val borderColorArgb = WinLiteAccent.toArgb()
 
         drawWithCache {
             val w = size.width

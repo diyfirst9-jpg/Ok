@@ -29,7 +29,7 @@ import com.winlator.cmod.app.shell.UnifiedActivity
 import com.winlator.cmod.shared.io.AssetPaths
 import com.winlator.cmod.shared.io.FileUtils
 import com.winlator.cmod.shared.io.StorageUtils
-import com.winlator.cmod.shared.theme.WinNativeTheme
+import com.winlator.cmod.shared.theme.WinLiteTheme
 import com.winlator.cmod.shared.ui.toast.WinToast
 import com.winlator.cmod.shared.util.ArrayUtils
 import org.json.JSONArray
@@ -56,7 +56,7 @@ class DebugFragment : Fragment() {
         return ComposeView(ctx).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                WinNativeTheme(
+                WinLiteTheme(
                     colorScheme =
                         darkColorScheme(
                             primary = Color(0xFFFF7A00),
@@ -275,7 +275,7 @@ class DebugFragment : Fragment() {
     }
 
     private fun logsDownloadDir(): File {
-        val dir = File(android.os.Environment.getExternalStorageDirectory(), "WinNative/logs")
+        val dir = File(android.os.Environment.getExternalStorageDirectory(), "WinLite/logs")
         dir.mkdirs()
         return dir
     }
@@ -322,7 +322,7 @@ class DebugFragment : Fragment() {
             val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(java.util.Date())
             val dest = File(logsDownloadDir(), "winnative_logs_$timestamp.zip")
             writeLogsZip(dest, files)
-            "/WinNative/logs/${dest.name}"
+            "/WinLite/logs/${dest.name}"
         } catch (e: Exception) {
             WinToast.show(ctx, getString(R.string.settings_debug_capture_failed, e.message ?: ""))
             null
@@ -438,7 +438,7 @@ class DebugFragment : Fragment() {
             val dest = File(logsDownloadDir(), exportFileName(file))
             file.inputStream().use { input -> FileOutputStream(dest).use { input.copyTo(it) } }
             markLogDownloaded(file)
-            "/WinNative/logs/${dest.name}"
+            "/WinLite/logs/${dest.name}"
         } catch (e: Exception) {
             WinToast.show(ctx, getString(R.string.settings_debug_capture_failed, e.message ?: ""))
             null

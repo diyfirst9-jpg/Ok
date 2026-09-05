@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
     
-    <string name="common_ui_app_name">WinNative</string>
+    <string name="common_ui_app_name">WinLite</string>
     <string name="common_ui_run">Run</string>
     <string name="common_ui_edit">Edit</string>
     <string name="common_ui_remove">Remove</string>
@@ -109,7 +109,6 @@
     <string name="common_ui_connected">Connected</string>
     <string name="common_ui_install">Install</string>
     <string name="common_ui_application">Application</string>
-    <string name="common_ui_check">Check</string>
     <string name="store_game_check_for_update">Check for Update</string>
     <string name="store_game_checking_for_update">Checking</string>
     <string name="store_game_download_update">Download Update</string>
@@ -137,7 +136,7 @@
     <string name="common_ui_grant_all_files_access_browse">Grant all file access to browse folders directly.</string>
     <string name="common_ui_not_configured">Not configured</string>
     <string name="common_ui_reinstall">Reinstall</string>
-    <string name="common_ui_exit_app_confirm">Exit WinNative?</string>
+    <string name="common_ui_exit_app_confirm">Exit WinLite?</string>
     <string name="common_ui_elements_count">%1$d elements</string>
     <string name="common_ui_disabled_placeholder">-- Disabled --</string>
     <string name="common_ui_enabled">Enabled</string>
@@ -334,7 +333,7 @@
     <string name="shortcuts_properties_runtime_patcher">Runtime DRM Patcher</string>
     <string name="shortcuts_properties_runtime_patcher_description">Injects a DRM patcher DLL at launch. Reduces FPS — only use if the Legacy Launcher alone fails.</string>
     <string name="steam_section_title">Steam</string>
-    <string name="steam_section_real_client">WinNative Real Steam Client</string>
+    <string name="steam_section_real_client">WinLite Real Steam Client</string>
     <string name="steam_section_emulator">Legacy Steam Emulator</string>
     <string name="shortcuts_properties_use_steam_input">Use Steam Input</string>
     <string name="shortcuts_properties_steam_offline_mode">Steam Offline Mode</string>
@@ -693,8 +692,8 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="session_xserver_pref_kbd">Keyboard</string>
     <string name="session_xserver_pref_other">Other</string>
     <string name="session_xserver_pref_version">Version</string>
-    <string name="session_xserver_notification_description">WinNative XServer Messages</string>
-    <string name="session_xserver_notification_content">WinNative is running, do not kill or swipe this notification</string>
+    <string name="session_xserver_notification_description">WinLite XServer Messages</string>
+    <string name="session_xserver_notification_content">WinLite is running, do not kill or swipe this notification</string>
 
     
     <string name="session_drawer_keyboard">Keyboard</string>
@@ -1117,13 +1116,11 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="settings_general_xinput_toggle_title">Disable XInput</string>
     <string name="settings_general_xinput_toggle_summary">Turns off XInput handling when you want exclusive mouse and keyboard control.</string>
     <string name="settings_external_display_output_summary">Move the game to a connected external display instead of mirroring this screen. Glasses always use their own display.</string>
-    <string name="settings_general_file_provider_summary">Expose WinNative files to Android document pickers and file managers.</string>
-    <string name="settings_general_auto_scraping_summary">This setting allows WinNative to automatically pull custom game artwork.</string>
+    <string name="settings_general_file_provider_summary">Expose WinLite files to Android document pickers and file managers.</string>
+    <string name="settings_general_auto_scraping_summary">This setting allows WinLite to automatically pull custom game artwork.</string>
     <string name="settings_general_open_browser_summary">Open supported web links in the Android browser instead of inside Wine.</string>
     <string name="settings_general_clipboard_summary">Allow copy and paste between Android and Wine sessions.</string>
     <string name="settings_general_imagefs_summary">Restore bundled system files without removing your existing containers.</string>
-    <string name="settings_general_check_for_updates">Check for Updates</string>
-    <string name="settings_general_check_for_updates_summary">Automatically check for new app versions on launch and periodically.</string>
 
     
     <string name="settings_audio_midi_sound_font">MIDI SoundFont</string>
@@ -1163,7 +1160,7 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="settings_debug_input_logs">Input Logs</string>
     <string name="settings_debug_input_logs_description">Log gamepad, touch, and keyboard input events</string>
     <string name="settings_debug_download_logs">Download Logs</string>
-    <string name="settings_debug_download_logs_description">Log download resolver and WinNative fallback events</string>
+    <string name="settings_debug_download_logs_description">Log download resolver and WinLite fallback events</string>
     <string name="settings_debug_vulkan_validation_layers_title">Vulkan Validation Layers</string>
     <string name="settings_debug_vulkan_validation_layers_subtitle">Restart display to apply.</string>
     <string name="settings_debug_share_logs">Share Logs</string>
@@ -1179,10 +1176,10 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="settings_debug_delete_logs_confirm_message">This permanently deletes all saved log files (%1$s). This can\'t be undone.</string>
     <string name="settings_debug_logs_browser_title">Logs</string>
     <string name="settings_debug_log_truncated">Showing last %1$s of this log</string>
-    <string name="settings_debug_logs_subject">WinNative Logs (%1$s)</string>
+    <string name="settings_debug_logs_subject">WinLite Logs (%1$s)</string>
     <string name="settings_debug_no_logs_available">No debug logs available. Enable debugging options first and launch a game.</string>
     <string name="settings_debug_capture_failed">Failed to capture logs: %1$s</string>
-    <string name="settings_debug_log_to_file_desc">Log WinNative process errors, warnings and crashes to file</string>
+    <string name="settings_debug_log_to_file_desc">Log WinLite process errors, warnings and crashes to file</string>
     <string name="settings_debug_section_emulation">Emulation</string>
     <string name="settings_debug_section_subsystems">Subsystems</string>
     <string name="settings_debug_section_tools">Tools</string>
@@ -1191,17 +1188,12 @@ E.g. <b>META</b> for <i>META key</i>, \n
     <string name="settings_debug_channel_toggle_hint">Tap to toggle channels. Enabled channels are included in Wine debug output.</string>
     <string name="settings_debug_remove_channel_desc">Remove %1$s</string>
 
-    <string name="settings_other_language_title">Language</string>
-    <string name="settings_other_language_summary">Choose the display language</string>
-    <string name="settings_other_language_system_default">System default</string>
     <string name="settings_other_game_language_title">Game Language</string>
     <string name="settings_other_game_language_summary">Preferred language for Steam/Epic/GOG downloads</string>
 
     <string name="settings_other_section_integration">Integration</string>
     <string name="settings_other_setup_wizard_title">Setup Wizard</string>
     <string name="settings_other_setup_wizard_summary">Open the setup wizard again to review permissions, system files, and default containers.</string>
-    <string name="settings_other_checking_for_updates">Checking for updates\u2026</string>
-    <string name="settings_other_update_check_cooldown">Please wait %1$ds before checking again</string>
     <string name="settings_other_persistable_permission_failed">Unable to take persistable permissions: %1$s</string>
     <string name="settings_other_keep_app_open">Please keep the app open while this finishes.</string>
 
@@ -1619,7 +1611,7 @@ Installed path:
     <string name="steam_chat_setting_ingame">Enable Chat in Game</string>
     <string name="steam_chat_setting_ingame_desc">Receive and send messages while playing</string>
     <string name="steam_chat_setting_stay_running">Run in Background</string>
-    <string name="steam_chat_setting_stay_running_desc">Keep chat running after you exit WinNative</string>
+    <string name="steam_chat_setting_stay_running_desc">Keep chat running after you exit WinLite</string>
     <string name="steam_chat_settings_overlay_needed">Allow display over other apps to use chat heads</string>
     <string name="steam_chat_heads_title">Messages</string>
     <string name="steam_chat_heads_recent_title">Recent</string>
@@ -1698,6 +1690,6 @@ Installed path:
     <string name="settings_frame_generation_not_owned">Frame generation uses shaders from Lossless Scaling. Buy it on Steam with the signed-in account to enable this.</string>
     <string name="settings_frame_generation_locate">Select Lossless.dll…</string>
     <string name="session_drawer_rail_label_frame_gen">FPS</string>
-    <string name="networking_driver_winnative">WinNative Network Driver</string>
+    <string name="networking_driver_winnative">WinLite Network Driver</string>
     <string name="networking_driver_none">Wine default (no adapter emulation)</string>
     </resources>

@@ -725,8 +725,8 @@ private fun isSteamCompatible(item: ComponentItem): Boolean =
     item.verName.contains("steam", ignoreCase = true) ||
         item.key.contains("steam", ignoreCase = true)
 
-// Badge marking first-party "WinNative" builds. A perfect square (width follows
-// the filled height) in WinNative blue, carrying only the WinNative logo for
+// Badge marking first-party "WinLite" builds. A perfect square (width follows
+// the filled height) in WinLite blue, carrying only the WinLite logo for
 // "WN" branding. Pass Modifier.fillMaxHeight() to match the row's action height.
 @Composable
 private fun OfficialBadge(modifier: Modifier = Modifier) {
@@ -740,7 +740,7 @@ private fun OfficialBadge(modifier: Modifier = Modifier) {
     ) {
         Image(
             painter = painterResource(R.drawable.ic_winnative_badge),
-            contentDescription = "Official WinNative build",
+            contentDescription = "Official WinLite build",
             modifier = Modifier.fillMaxSize(0.8f),
         )
     }

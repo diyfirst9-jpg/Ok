@@ -78,6 +78,22 @@
         <item name="android:windowAnimationStyle">@style/AppWindowAnimationNoAnimation</item>
     </style>
 
+    <!-- Floating overlay theme for SetupWizardActivity: transparent, non-fullscreen window so
+         Compose can draw a dimmed scrim + centered floating card instead of a solid fullscreen page. -->
+    <style name="AppThemeSetupOverlayDark" parent="@style/AppTheme.Dark">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="AppThemeSetupOverlayDarkNoAnimation" parent="@style/AppThemeSetupOverlayDark">
+        <item name="android:windowAnimationStyle">@style/AppWindowAnimationNoAnimation</item>
+    </style>
+
     <style name="AppThemeUnifiedDarkNoAnimation" parent="@style/AppTheme.Dark">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">#000000</item>

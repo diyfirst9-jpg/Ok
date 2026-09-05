@@ -44,12 +44,12 @@ public:
     }
 
 private:
-    struct Generation {
-        std::array<VkDescriptorSet, LSFG_HISTORY_SLOTS> first_descriptor_sets{};
-        std::array<VkDescriptorSet, LSFG_HISTORY_SLOTS> sixth_descriptor_sets{};
-        std::array<VkDescriptorSet, LSFG_DELTA_STAGES - 2> descriptor_sets{};
-    };
-
+    // --- ECS-style / data-oriented layout --------------------------------
+    // "Entity" = one generation slot. Its three descriptor-set groups
+    // used to be fields of a single Generation struct held in one
+    // array-of-structs. Split into their own flat "component" tables so
+    // DispatchStep()'s hot lookup for a given slot/step only ever touches
+    // the one group it actually binds.
     LsfgImageHistory* inputs{};
     LsfgImage* flow_input{};
     LsfgImage* previous_gamma{};
@@ -57,7 +57,14 @@ private:
     LsfgImage* previous2{};
 
     std::array<LsfgPass, LSFG_DELTA_STAGES> passes;
-    std::array<Generation, LSFG_GENERATION_SLOTS> generations{};
+
+    // Component tables, indexed by generation slot.
+    std::array<std::array<VkDescriptorSet, LSFG_HISTORY_SLOTS>, LSFG_GENERATION_SLOTS>
+        first_descriptor_sets{};
+    std::array<std::array<VkDescriptorSet, LSFG_HISTORY_SLOTS>, LSFG_GENERATION_SLOTS>
+        sixth_descriptor_sets{};
+    std::array<std::array<VkDescriptorSet, LSFG_DELTA_STAGES - 2>, LSFG_GENERATION_SLOTS>
+        descriptor_sets{};
 
     std::array<LsfgImage, LSFG_DELTA_TEMPS> temp1;
     LsfgImagePair temp2;

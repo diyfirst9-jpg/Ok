@@ -89,18 +89,19 @@ LsfgGamma::LsfgGamma(const Device& device, const LsfgShaders& shaders, LsfgResou
 
     size_t next = 0;
     for (size_t slot = 0; slot < LSFG_GENERATION_SLOTS; ++slot) {
-        Generation& pass = generations[slot];
+        auto& first_sets = first_descriptor_sets[slot];
+        auto& sets_slot = descriptor_sets[slot];
         const VkBuffer buffer = resources.GetBuffer(LsfgSlotTimestamp(slot), previous == nullptr);
 
         for (size_t i = 0; i < LSFG_HISTORY_SLOTS; ++i) {
-            pass.first_descriptor_sets[i] = sets[next++];
+            first_sets[i] = sets[next++];
         }
         for (size_t i = 0; i < LSFG_GAMMA_STAGES - 1; ++i) {
-            pass.descriptor_sets[i] = sets[next++];
+            sets_slot[i] = sets[next++];
         }
 
         for (size_t i = 0; i < LSFG_HISTORY_SLOTS; ++i) {
-            LsfgDescriptorWriter(pass.first_descriptor_sets[i])
+            LsfgDescriptorWriter(first_sets[i])
                 .AddUniformBuffer(buffer, LsfgResources::BufferSize())
                 .AddSampler(border_sampler)
                 .AddSampler(edge_sampler)
@@ -110,24 +111,24 @@ LsfgGamma::LsfgGamma(const Device& device, const LsfgShaders& shaders, LsfgResou
                 .AddStorageImages(temp1)
                 .Build(device);
         }
-        LsfgDescriptorWriter(pass.descriptor_sets[0])
+        LsfgDescriptorWriter(sets_slot[0])
             .AddSampler(sampler)
             .AddSampledImages(temp1)
             .AddStorageImages(temp2)
             .Build(device);
-        LsfgDescriptorWriter(pass.descriptor_sets[1])
+        LsfgDescriptorWriter(sets_slot[1])
             .AddSampler(sampler)
             .AddSampledImages(temp2)
             .AddStorageImage(temp1[0])
             .AddStorageImage(temp1[1])
             .Build(device);
-        LsfgDescriptorWriter(pass.descriptor_sets[2])
+        LsfgDescriptorWriter(sets_slot[2])
             .AddSampler(sampler)
             .AddSampledImage(temp1[0])
             .AddSampledImage(temp1[1])
             .AddStorageImages(temp2)
             .Build(device);
-        LsfgDescriptorWriter(pass.descriptor_sets[3])
+        LsfgDescriptorWriter(sets_slot[3])
             .AddUniformBuffer(buffer, LsfgResources::BufferSize())
             .AddSampler(sampler)
             .AddSampler(edge_sampler)
@@ -171,14 +172,13 @@ void LsfgGamma::PushStepBarriers(LsfgBarriers& barriers, uint64_t frame_count, s
 
 void LsfgGamma::DispatchStep(VkCommandBuffer cmdbuf, uint64_t frame_count, size_t slot,
                              size_t step) {
-    const Generation& pass = generations[slot];
     const VkExtent2D extent = temp1[0].Extent();
     const size_t history = frame_count % LSFG_HISTORY_SLOTS;
 
     if (step == 0) {
-        passes[0].Bind(cmdbuf, pass.first_descriptor_sets[history]);
+        passes[0].Bind(cmdbuf, first_descriptor_sets[slot][history]);
     } else {
-        passes[step].Bind(cmdbuf, pass.descriptor_sets[step - 1]);
+        passes[step].Bind(cmdbuf, descriptor_sets[slot][step - 1]);
     }
     vkd.CmdDispatch(cmdbuf, GroupCount(extent.width), GroupCount(extent.height), 1);
 }

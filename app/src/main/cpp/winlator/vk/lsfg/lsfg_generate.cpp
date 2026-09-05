@@ -55,35 +55,34 @@ LsfgGenerate::LsfgGenerate(const Device& device, const LsfgShaders& shaders,
     edge_sampler =
         resources.GetSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_COMPARE_OP_ALWAYS, false);
 
-    const uint32_t total =
-        static_cast<uint32_t>(LSFG_GENERATION_SLOTS * LSFG_MAX_TARGETS * 2);
+    // Cold, per-slot component: filled once, sequentially.
+    for (size_t slot = 0; slot < LSFG_GENERATION_SLOTS; ++slot)
+        buffers[slot] = resources.GetBuffer(LsfgSlotTimestamp(slot));
+
+    const uint32_t total = static_cast<uint32_t>(ENTITY_COUNT * 2);
     const std::vector<VkDescriptorSet> sets =
         AllocateLsfgDescriptorSets(device, descriptor_pool, pass.SetLayout(), total);
     if (sets.size() != total) return;
 
+    // Hot component: one flat, sequential fill instead of a nested walk.
     size_t next = 0;
-    for (size_t slot = 0; slot < LSFG_GENERATION_SLOTS; ++slot) {
-        Generation& target = generations[slot];
-        target.buffer = resources.GetBuffer(LsfgSlotTimestamp(slot));
+    for (auto& entity_sets : descriptor_sets)
+        for (auto& set : entity_sets)
+            set = sets[next++];
 
-        for (auto& entry : target.targets) {
-            for (auto& set : entry.descriptor_sets) {
-                set = sets[next++];
-            }
-        }
-    }
     allocated = true;
 }
 
 void LsfgGenerate::SetTarget(const Device& device, size_t slot, uint32_t target,
                              VkImageView view) {
-    Target& entry = generations[slot].targets[target];
-    if (entry.view == view) return;
-    entry.view = view;
+    const size_t entity = EntityIndex(slot, target);
+    if (views[entity] == view) return;
+    views[entity] = view;
 
-    for (size_t i = 0; i < entry.descriptor_sets.size(); ++i) {
-        LsfgDescriptorWriter(entry.descriptor_sets[i])
-            .AddUniformBuffer(generations[slot].buffer, LsfgResources::BufferSize())
+    auto& sets = descriptor_sets[entity];
+    for (size_t i = 0; i < sets.size(); ++i) {
+        LsfgDescriptorWriter(sets[i])
+            .AddUniformBuffer(buffers[slot], LsfgResources::BufferSize())
             .AddSampler(sampler)
             .AddSampler(edge_sampler)
             .AddSampledImage((*frames)[1 - i])
@@ -97,16 +96,12 @@ void LsfgGenerate::SetTarget(const Device& device, size_t slot, uint32_t target,
 }
 
 void LsfgGenerate::ForgetTargets() {
-    for (auto& generation : generations) {
-        for (auto& entry : generation.targets) {
-            entry.view = VK_NULL_HANDLE;
-        }
-    }
+    views.fill(VK_NULL_HANDLE); // one contiguous sweep instead of nested loops
 }
 
 void LsfgGenerate::Dispatch(VkCommandBuffer cmdbuf, uint64_t frame_count, size_t slot,
                             uint32_t target, VkImage image, VkExtent2D extent) {
-    const Target& entry = generations[slot].targets[target];
+    const auto& sets = descriptor_sets[EntityIndex(slot, target)];
 
     LsfgBarriers(cmdbuf)
         .WriteToReadAll(*frames)
@@ -116,7 +111,7 @@ void LsfgGenerate::Dispatch(VkCommandBuffer cmdbuf, uint64_t frame_count, size_t
         .DiscardToWrite(image)
         .Build();
 
-    pass.Bind(cmdbuf, entry.descriptor_sets[frame_count % entry.descriptor_sets.size()]);
+    pass.Bind(cmdbuf, sets[frame_count % sets.size()]);
     vkd.CmdDispatch(cmdbuf, GroupCount(extent.width), GroupCount(extent.height), 1);
 
     const VkImageMemoryBarrier after = MakeTargetBarrier(
